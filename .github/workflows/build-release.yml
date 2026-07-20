@@ -1,7 +1,9 @@
 name: Build Release
 
 # Dispara em cada release publicado: rebuilda os executaveis e o instalador
-# e anexa os assets ao proprio release.
+# e anexa os assets ao proprio release. O nome/versao sao derivados da tag
+# do release (ex.: v1.2.3 -> LoteriaFederal-Setup-1.2.3.exe / versao 1.2.3.0),
+# sem necessidade de editar os arquivos manualmente.
 on:
   release:
     types: [published]
@@ -29,6 +31,36 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller pytest
 
+      - name: Compute version from tag
+        shell: pwsh
+        run: |
+          $tag = "${{ github.event.release.tag_name }}"
+          $ver = $tag.TrimStart('v')
+          $ver4 = "$ver.0"
+          Add-Content -Path $env:GITHUB_ENV -Value "VERSION=$ver"
+          Add-Content -Path $env:GITHUB_ENV -Value "VERSION4=$ver4"
+          Add-Content -Path $env:GITHUB_ENV -Value "INSTALLER=LoteriaFederal-Setup-$ver.exe"
+
+      - name: Patch version into build files
+        shell: pwsh
+        run: |
+          $ver = "${{ env.VERSION }}"
+          $ver4 = "${{ env.VERSION4 }}"
+          $fvi = ($ver4.Split('.')) -join ', '
+          # version_info.txt
+          $vi = Get-Content version_info.txt -Raw
+          $vi = $vi -replace 'filevers=\(\d+,\s*\d+,\s*\d+,\s*\d+\)', "filevers=($fvi)"
+          $vi = $vi -replace 'prodvers=\(\d+,\s*\d+,\s*\d+,\s*\d+\)', "prodvers=($fvi)"
+          $vi = $vi -replace "u'FileVersion', u'[\d.]+'", "u'FileVersion', u'$ver4'"
+          $vi = $vi -replace "u'ProductVersion', u'[\d.]+'", "u'ProductVersion', u'$ver4'"
+          Set-Content version_info.txt $vi
+          # LoteriaFederal.iss (o #define MyAppVersion alimenta AppVersion,
+          # VersionInfoVersion e OutputBaseFilename automaticamente)
+          $iss = Get-Content LoteriaFederal.iss -Raw
+          $iss = $iss -replace '#define MyAppVersion "[\d.]+"', "#define MyAppVersion `"$ver`""
+          Set-Content LoteriaFederal.iss $iss
+          Write-Host "Version set to $ver (filevers $fvi)"
+
       - name: Run tests
         run: pytest -q
 
@@ -52,7 +84,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist_installer/LoteriaFederal-Setup-1.0.0.exe
+            dist_installer/${{ env.INSTALLER }}
             dist/LoteriaFederal.exe
             dist/LoteriaFederal-Console.exe
         env:
