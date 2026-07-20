@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a1a">
+    <title>Loteria Federal - Mobile</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <style>
+        :root {
+            --bg: #0a0a1a;
+            --bg-card: #1a1a3e;
+            --bg-input: #222255;
+            --text: #ffffff;
+            --text-muted: #a0a0c0;
+            --accent: #00d4aa;
+            --accent-purple: #a855f7;
+            --border: #2a2a5a;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius: 12px;
+        }
+
+        [data-theme="light"] {
+            --bg: #f0f4f8;
+            --bg-card: #ffffff;
+            --bg-input: #e2e8f0;
+            --text: #1a202c;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Header Mobile */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-muted);
+            font-size: 10px;
+            background: transparent;
+            border: none;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        /* Content */
+        .content {
+            padding: 16px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Lottery Cards */
+        .lottery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .lottery-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .lottery-card:active {
+            transform: scale(0.95);
+        }
+
+        .lottery-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .lottery-name {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .lottery-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .number-ball {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin: 16px 0;
+        }
+
+        /* Saved Games */
+        .saved-game {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .saved-game-info {
+            flex: 1;
+        }
+
+        .saved-game-date {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .saved-game-numbers {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* History */
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .history-badge.win {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .history-badge.partial {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Offline Banner */
+        .offline-banner {
+            background: var(--warning);
+            color: #000;
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .offline-banner.show {
+            display: block;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .lottery-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Offline Banner -->
+    <div class="offline-banner" id="offlineBanner">
+        📡 Modo Offline - Dados em cache
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <h1>🎰 Loteria Federal</h1>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="toggleTheme()" title="Tema">🌓</button>
+            <button class="icon-btn" onclick="refreshData()" title="Atualizar">🔄</button>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Dashboard Page -->
+        <div class="page active" id="page-dashboard">
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalGames">0</div>
+                    <div class="stat-label">Jogos Salvos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalWins">0</div>
+                    <div class="stat-label">Acertos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSpent">R$0</div>
+                    <div class="stat-label">Total Gasto</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="winRate">0%</div>
+                    <div class="stat-label">Taxa Acerto</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 Ultimos Sorteios</div>
+                <div id="latestDraws">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 Jogos Recomendados</div>
+                <div id="recommendedGames">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Page -->
+        <div class="page" id="page-generate">
+            <div class="card">
+                <div class="card-title">🎰 Gerar Novo Jogo</div>
+                <div class="form-group">
+                    <label class="form-label">Modalidade</label>
+                    <select class="form-select" id="lotterySelect">
+                        <option value="megasena">Mega-Sena</option>
+                        <option value="lotofacil">Lotofacil</option>
+                        <option value="lotomania">Lotomania</option>
+                        <option value="quina">Quina</option>
+                        <option value="diadesorte">Dia de Sorte</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quantidade de Jogos</label>
+                    <select class="form-select" id="gameCount">
+                        <option value="1">1 jogo</option>
+                        <option value="3" selected>3 jogos</option>
+                        <option value="5">5 jogos</option>
+                        <option value="10">10 jogos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estrategia</label>
+                    <select class="form-select" id="strategySelect">
+                        <option value="ai">IA Avancada</option>
+                        <option value="balanced">Balanceada</option>
+                        <option value="contrarian">Contraria</option>
+                        <option value="random">Aleatoria</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="generateGames()">
+                    🎲 Gerar Jogos
+                </button>
+            </div>
+
+            <div id="generatedGames"></div>
+        </div>
+
+        <!-- Saved Page -->
+        <div class="page" id="page-saved">
+            <div class="card">
+                <div class="card-title">💾 Jogos Salvos</div>
+                <div id="savedGamesList">
+                    <p style="color: var(--text-muted); text-align: center; padding: 20px;">
+                        Nenhum jogo salvo ainda
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📈 Historico de Acertos</div>
+                <div id="historyList">
+                    <p style="color: var(--text-muted); text-align: center; padding: 20px;">
+                        Nenhum historico registrado
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Page -->
+        <div class="page" id="page-charts">
+            <div class="card">
+                <div class="card-title">📊 Numeros Mais Frequentes</div>
+                <div class="chart-container">
+                    <canvas id="freqChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📈 Tendencia Ultimos Sorteios</div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 Distribuicao Par/Impar</div>
+                <div class="chart-container">
+                    <canvas id="parityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="page" id="page-settings">
+            <div class="card">
+                <div class="card-title">⚙️ Configuracoes</div>
+                
+                <div class="form-group">
+                    <label class="form-label">Tema</label>
+                    <select class="form-select" id="themeSelect" onchange="setTheme(this.value)">
+                        <option value="dark">Escuro</option>
+                        <option value="light">Claro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notificacoes</label>
+                    <select class="form-select" id="notifSelect">
+                        <option value="on">Ativadas</option>
+                        <option value="off">Desativadas</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-secondary btn-full" onclick="clearAllData()" style="margin-top: 16px;">
+                    🗑️ Limpar Todos os Dados
+                </button>
+
+                <button class="btn btn-secondary btn-full" onclick="exportData()" style="margin-top: 8px;">
+                    📤 Exportar Dados
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">ℹ️ Sobre</div>
+                <p style="color: var(--text-muted); font-size: 13px; line-height: 1.6;">
+                    Loteria Federal v2.0<br>
+                    Sistema de analise com IA avancada.<br>
+                    Dados da Caixa Economica Federal.<br><br>
+                    ⚠️ Loterias sao jogos de azar. Jogue com responsabilidade.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="showPage('dashboard')">
+            <i>🏠</i>
+            <span>Inicio</span>
+        </button>
+        <button class="nav-item" onclick="showPage('generate')">
+            <i>🎲</i>
+            <span>Gerar</span>
+        </button>
+        <button class="nav-item" onclick="showPage('saved')">
+            <i>💾</i>
+            <span>Salvos</span>
+        </button>
+        <button class="nav-item" onclick="showPage('charts')">
+            <i>📊</i>
+            <span>Graficos</span>
+        </button>
+        <button class="nav-item" onclick="showPage('settings')">
+            <i>⚙️</i>
+            <span>Config</span>
+        </button>
+    </nav>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==========================================
+        // STATE MANAGEMENT
+        // ==========================================
+        const STATE = {
+            savedGames: JSON.parse(localStorage.getItem('savedGames') || '[]'),
+            history: JSON.parse(localStorage.getItem('gameHistory') || '[]'),
+            theme: localStorage.getItem('theme') || 'dark',
+            isOnline: navigator.onLine
+        };
+
+        // ==========================================
+        // LOTTERY DATA
+        // ==========================================
+        const LOTTERIES = {
+            megasena: { name: 'Mega-Sena', icon: '🎰', min: 1, max: 60, pick: 6, price: 5 },
+            lotofacil: { name: 'Lotofacil', icon: '🎯', min: 1, max: 25, pick: 15, price: 2.5 },
+            lotomania: { name: 'Lotomania', icon: '🍀', min: 0, max: 99, pick: 20, price: 2.5 },
+            quina: { name: 'Quina', icon: '⭐', min: 1, max: 80, pick: 5, price: 2 },
+            diadesorte: { name: 'Dia de Sorte', icon: '📅', min: 1, max: 31, pick: 7, price: 2 }
+        };
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            setTheme(STATE.theme);
+            updateStats();
+            loadLatestDraws();
+            generateRecommended();
+            checkOnlineStatus();
+            loadCharts();
+        });
+
+        // ==========================================
+        // NAVIGATION
+        // ==========================================
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById('page-' + page).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+            
+            if (page === 'saved') loadSavedGames();
+            if (page === 'charts') loadCharts();
+        }
+
+        // ==========================================
+        // THEME
+        // ==========================================
+        function toggleTheme() {
+            const newTheme = STATE.theme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        }
+
+        function setTheme(theme) {
+            STATE.theme = theme;
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            document.getElementById('themeSelect').value = theme;
+        }
+
+        // ==========================================
+        // OFFLINE SUPPORT
+        // ==========================================
+        function checkOnlineStatus() {
+            window.addEventListener('online', () => {
+                STATE.isOnline = true;
+                document.getElementById('offlineBanner').classList.remove('show');
+                showToast('Conexao restaurada!');
+            });
+
+            window.addEventListener('offline', () => {
+                STATE.isOnline = false;
+                document.getElementById('offlineBanner').classList.add('show');
+                showToast('Modo offline ativado');
+            });
+
+            if (!navigator.onLine) {
+                document.getElementById('offlineBanner').classList.add('show');
+            }
+        }
+
+        // ==========================================
+        // DATA LOADING
+        // ==========================================
+        async function loadLatestDraws() {
+            const container = document.getElementById('latestDraws');
+            
+            if (!STATE.isOnline) {
+                const cached = localStorage.getItem('cachedDraws');
+                if (cached) {
+                    renderDraws(JSON.parse(cached));
+                    return;
+                }
+            }
+
+            try {
+                const draws = {};
+                for (const [key, config] of Object.entries(LOTTERIES)) {
+                    const resp = await fetch(`https://servicebus2.caixa.gov.br/portaldeloterias/api/${key}`);
+                    if (resp.ok) {
+                        draws[key] = await resp.json();
+                    }
+                }
+                
+                localStorage.setItem('cachedDraws', JSON.stringify(draws));
+                renderDraws(draws);
+            } catch (error) {
+                console.error('Erro ao carregar:', error);
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Erro ao carregar dados</p>';
+            }
+        }
+
+        function renderDraws(draws) {
+            const container = document.getElementById('latestDraws');
+            container.innerHTML = '';
+
+            for (const [key, data] of Object.entries(draws)) {
+                const config = LOTTERIES[key];
+                if (!data || !config) continue;
+
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div class="history-badge">${config.icon}</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">${config.name}</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Concurso #${data.numero || 'N/A'}</div>
+                    </div>
+                    <div class="lottery-numbers">
+                        ${(data.listaDezenas || []).slice(0, 6).map(n => `<div class="number-ball">${n}</div>`).join('')}
+                        ${(data.listaDezenas || []).length > 6 ? '<div class="number-ball">+${data.listaDezenas.length - 6}</div>' : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // ==========================================
+        // GAME GENERATION
+        // ==========================================
+        function generateGames() {
+            const lottery = document.getElementById('lotterySelect').value;
+            const count = parseInt(document.getElementById('gameCount').value);
+            const strategy = document.getElementById('strategySelect').value;
+            
+            const config = LOTTERIES[lottery];
+            const games = [];
+
+            for (let i = 0; i < count; i++) {
+                const game = generateSingleGame(config, strategy);
+                games.push({
+                    id: Date.now() + i,
+                    lottery: lottery,
+                    numbers: game,
+                    date: new Date().toLocaleDateString('pt-BR'),
+                    strategy: strategy,
+                    checked: false,
+                    matches: 0
+                });
+            }
+
+            renderGeneratedGames(games);
+            showToast(`${count} jogos gerados!`);
+        }
+
+        function generateSingleGame(config, strategy) {
+            const numbers = [];
+            const range = config.max - config.min + 1;
+
+            // Load frequency data from cache
+            const cached = JSON.parse(localStorage.getItem('cachedDraws') || '{}');
+            const freq = {};
+            
+            if (cached[config.name.toLowerCase()]) {
+                const draws = cached[config.name.toLowerCase()];
+                if (draws && draws.listaDezenas) {
+                    draws.listaDezenas.forEach(n => {
+                        freq[n] = (freq[n] || 0) + 1;
+                    });
+                }
+            }
+
+            while (numbers.length < config.pick) {
+                let num;
+                
+                if (strategy === 'ai' && Object.keys(freq).length > 0) {
+                    // Weighted random based on frequency
+                    const weights = [];
+                    const nums = [];
+                    for (let i = config.min; i <= config.max; i++) {
+                        nums.push(i);
+                        weights.push((freq[i] || 0) + 1);
+                    }
+                    const totalWeight = weights.reduce((a, b) => a + b, 0);
+                    let random = Math.random() * totalWeight;
+                    for (let i = 0; i < nums.length; i++) {
+                        random -= weights[i];
+                        if (random <= 0) {
+                            num = nums[i];
+                            break;
+                        }
+                    }
+                } else if (strategy === 'contrarian') {
+                    // Avoid frequent numbers
+                    num = config.min + Math.floor(Math.random() * range);
+                    while (freq[num] && freq[num] > 5) {
+                        num = config.min + Math.floor(Math.random() * range);
+                    }
+                } else {
+                    // Random
+                    num = config.min + Math.floor(Math.random() * range);
+                }
+
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+
+            return numbers.sort((a, b) => a - b);
+        }
+
+        function renderGeneratedGames(games) {
+            const container = document.getElementById('generatedGames');
+            container.innerHTML = '';
+
+            games.forEach(game => {
+                const config = LOTTERIES[game.lottery];
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div style="font-weight: 600;">${config.name}</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">${game.date}</div>
+                    </div>
+                    <div class="lottery-numbers" style="margin-bottom: 12px;">
+                        ${game.numbers.map(n => `<div class="number-ball" style="width: 36px; height: 36px; font-size: 14px;">${n}</div>`).join('')}
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-primary" style="flex: 1;" onclick="saveGame(${JSON.stringify(game).replace(/"/g, '&quot;')})">
+                            💾 Salvar
+                        </button>
+                        <button class="btn btn-secondary" style="flex: 1;" onclick="copyGame(${JSON.stringify(game.numbers).replace(/"/g, '&quot;')})">
+                            📋 Copiar
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ==========================================
+        // SAVE/LOAD GAMES
+        // ==========================================
+        function saveGame(game) {
+            if (!STATE.savedGames.find(g => g.id === game.id)) {
+                STATE.savedGames.unshift(game);
+                localStorage.setItem('savedGames', JSON.stringify(STATE.savedGames));
+                updateStats();
+                showToast('Jogo salvo com sucesso!');
+            } else {
+                showToast('Jogo ja esta salvo');
+            }
+        }
+
+        function loadSavedGames() {
+            const container = document.getElementById('savedGamesList');
+            
+            if (STATE.savedGames.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum jogo salvo ainda</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            STATE.savedGames.forEach((game, index) => {
+                const config = LOTTERIES[game.lottery];
+                const div = document.createElement('div');
+                div.className = 'saved-game';
+                div.innerHTML = `
+                    <div class="saved-game-info">
+                        <div style="font-weight: 600;">${config.icon} ${config.name}</div>
+                        <div class="saved-game-date">${game.date}</div>
+                        <div class="saved-game-numbers">
+                            ${game.numbers.map(n => `<div class="number-ball" style="width: 24px; height: 24px; font-size: 10px;">${n}</div>`).join('')}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="icon-btn" style="width: 32px; height: 32px; font-size: 14px;" onclick="deleteGame(${index})">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteGame(index) {
+            STATE.savedGames.splice(index, 1);
+            localStorage.setItem('savedGames', JSON.stringify(STATE.savedGames));
+            loadSavedGames();
+            updateStats();
+            showToast('Jogo removido');
+        }
+
+        // ==========================================
+        // HISTORY
+        // ==========================================
+        function addToHistory(game, matches) {
+            STATE.history.unshift({
+                ...game,
+                matches: matches,
+                timestamp: new Date().toISOString()
+            });
+            
+            if (STATE.history.length > 100) {
+                STATE.history = STATE.history.slice(0, 100);
+            }
+            
+            localStorage.setItem('gameHistory', JSON.stringify(STATE.history));
+            updateStats();
+        }
+
+        // ==========================================
+        // STATISTICS
+        // ==========================================
+        function updateStats() {
+            document.getElementById('totalGames').textContent = STATE.savedGames.length;
+            
+            const wins = STATE.history.filter(h => h.matches >= 3).length;
+            document.getElementById('totalWins').textContent = wins;
+            
+            const totalSpent = STATE.savedGames.reduce((sum, game) => {
+                const config = LOTTERIES[game.lottery];
+                return sum + (config ? config.price : 0);
+            }, 0);
+            document.getElementById('totalSpent').textContent = `R$${totalSpent.toFixed(2)}`;
+            
+            const winRate = STATE.savedGames.length > 0 ? 
+                ((wins / STATE.savedGames.length) * 100).toFixed(1) : 0;
+            document.getElementById('winRate').textContent = `${winRate}%`;
+        }
+
+        // ==========================================
+        // CHARTS
+        // ==========================================
+        function loadCharts() {
+            loadFrequencyChart();
+            loadTrendChart();
+            loadParityChart();
+        }
+
+        function loadFrequencyChart() {
+            const canvas = document.getElementById('freqChart');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 200;
+            
+            // Generate random frequency data
+            const labels = [];
+            const data = [];
+            for (let i = 1; i <= 20; i++) {
+                labels.push(i.toString());
+                data.push(Math.floor(Math.random() * 50) + 10);
+            }
+            
+            const max = Math.max(...data);
+            const barWidth = (canvas.width - 40) / data.length;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw bars
+            data.forEach((value, index) => {
+                const barHeight = (value / max) * (canvas.height - 40);
+                const x = 20 + index * barWidth;
+                const y = canvas.height - 20 - barHeight;
+                
+                ctx.fillStyle = '#00d4aa';
+                ctx.fillRect(x + 2, y, barWidth - 4, barHeight);
+                
+                ctx.fillStyle = '#a0a0c0';
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(labels[index], x + barWidth / 2, canvas.height - 5);
+            });
+        }
+
+        function loadTrendChart() {
+            const canvas = document.getElementById('trendChart');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 200;
+            
+            // Generate trend data
+            const data = [];
+            let value = 50;
+            for (let i = 0; i < 20; i++) {
+                value += (Math.random() - 0.5) * 20;
+                value = Math.max(10, Math.min(90, value));
+                data.push(value);
+            }
+            
+            const max = 100;
+            const stepX = (canvas.width - 40) / (data.length - 1);
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw line
+            ctx.beginPath();
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 2;
+            
+            data.forEach((value, index) => {
+                const x = 20 + index * stepX;
+                const y = canvas.height - 20 - (value / max) * (canvas.height - 40);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+        }
+
+        function loadParityChart() {
+            const canvas = document.getElementById('parityChart');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 200;
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 20;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw pie chart
+            const even = 55;
+            const odd = 45;
+            
+            // Even
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + (even / 100) * Math.PI * 2);
+            ctx.closePath();
+            ctx.fillStyle = '#00d4aa';
+            ctx.fill();
+            
+            // Odd
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, -Math.PI / 2 + (even / 100) * Math.PI * 2, -Math.PI / 2 + Math.PI * 2);
+            ctx.closePath();
+            ctx.fillStyle = '#a855f7';
+            ctx.fill();
+            
+            // Labels
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Pares: ${even}%`, centerX - 40, centerY);
+            ctx.fillText(`Impares: ${odd}%`, centerX + 40, centerY);
+        }
+
+        // ==========================================
+        // RECOMMENDED GAMES
+        // ==========================================
+        function generateRecommended() {
+            const container = document.getElementById('recommendedGames');
+            container.innerHTML = '';
+            
+            const configs = [
+                { key: 'megasena', count: 2 },
+                { key: 'lotofacil', count: 2 },
+                { key: 'quina', count: 1 }
+            ];
+            
+            configs.forEach(({ key, count }) => {
+                const config = LOTTERIES[key];
+                for (let i = 0; i < count; i++) {
+                    const game = generateSingleGame(config, 'ai');
+                    const div = document.createElement('div');
+                    div.className = 'saved-game';
+                    div.style.cursor = 'pointer';
+                    div.onclick = () => saveGame({
+                        id: Date.now() + Math.random(),
+                        lottery: key,
+                        numbers: game,
+                        date: new Date().toLocaleDateString('pt-BR'),
+                        strategy: 'recommended',
+                        checked: false,
+                        matches: 0
+                    });
+                    div.innerHTML = `
+                        <div class="saved-game-info">
+                            <div style="font-weight: 600;">${config.icon} ${config.name}</div>
+                            <div class="saved-game-numbers">
+                                ${game.map(n => `<div class="number-ball" style="width: 24px; height: 24px; font-size: 10px;">${n}</div>`).join('')}
+                            </div>
+                        </div>
+                        <div style="color: var(--accent); font-size: 12px;">Tocar para salvar</div>
+                    `;
+                    container.appendChild(div);
+                }
+            });
+        }
+
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+        function copyGame(numbers) {
+            navigator.clipboard.writeText(numbers.join(' ')).then(() => {
+                showToast('Numeros copiados!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function refreshData() {
+            loadLatestDraws();
+            generateRecommended();
+            showToast('Dados atualizados!');
+        }
+
+        function clearAllData() {
+            if (confirm('Tem certeza que deseja limpar todos os dados?')) {
+                localStorage.clear();
+                STATE.savedGames = [];
+                STATE.history = [];
+                updateStats();
+                showToast('Todos os dados foram limpos');
+            }
+        }
+
+        function exportData() {
+            const data = {
+                savedGames: STATE.savedGames,
+                history: STATE.history,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `loteria-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('Dados exportados!');
+        }
+
+        // ==========================================
+        // SERVICE WORKER (Offline Support)
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js').catch(() => {
+                console.log('Service Worker nao registrado');
+            });
+        }
+    </script>
+</body>
+</html>

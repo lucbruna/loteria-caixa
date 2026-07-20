@@ -1,0 +1,22 @@
+TERMO DE USO / EULA - LOTERIA FEDERAL IA
+==========================================
+
+Este software ("Loteria Federal IA") e fornecido "no estado em que se
+encontra", sem garantias de qualquer tipo, expressas ou implicitas.
+
+1. NATUREZA DA FERRAMENTA
+Este programa realiza analises estatisticas e gera sugestoes de jogos com
+base em dados historicos publicos da Caixa Economica Federal. As sugestoes
+NAO constituem garantia de vitoria e nao ha qualquer promessa de lucro.
+
+2. RESPONSABILIDADE
+O usuario e o unico responsavel por suas decisoes de aposta. Jogue com
+responsabilidade. Este software nao possui vinculo oficial com a Caixa
+Economica Federal ou qualquer entidade governamental.
+
+3. DADOS
+Os dados sao obtidos da API publica da Caixa (servicebus2.caixa.gov.br).
+Requisitos de rede e disponibilidade da fonte sao de responsabilidade do
+usuario.
+
+Ao utilizar este software, voce concorda com os termos acima.

@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec
+
+# Build artifacts (binarios gerados pelo PyInstaller / Inno Setup)
+build/
+dist/
+dist_installer/
+
+# Test cache
+.pytest_cache/
+
+# Dados de runtime (criados em %APPDATA% ou localmente em execucao)
+data/
+*.log
+
+# Ambiente virtual
+venv/
+.venv/
+env/
+.env

@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loteria Federal - Dashboard Completo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primario: #0a0a1a;
+            --bg-secundario: #111128;
+            --bg-cartao: #1a1a3e;
+            --bg-cartao-hover: #222255;
+            --texto-primario: #ffffff;
+            --texto-secundario: #a0a0c0;
+            --acento-verde: #00d4aa;
+            --acento-roxo: #a855f7;
+            --acento-azul: #3b82f6;
+            --acento-vermelho: #ef4444;
+            --acento-amarelo: #f59e0b;
+            --acento-laranja: #f97316;
+            --borda: #2a2a5a;
+            --gradiente-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradiente-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradiente-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primario);
+            color: var(--texto-primario);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .animacao-fundo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(120, 0, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 170, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+        }
+
+        .cabecalho {
+            background: linear-gradient(135deg, rgba(26, 26, 62, 0.95) 0%, rgba(17, 17, 40, 0.98) 100%);
+            border-bottom: 1px solid var(--borda);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .conteudo-cabecalho {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icone-logo {
+            width: 48px;
+            height: 48px;
+            background: var(--gradiente-1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            animation: pulso 2s infinite;
+        }
+
+        @keyframes pulso {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--acento-verde), var(--acento-roxo));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo span {
+            font-size: 0.8rem;
+            color: var(--texto-secundario);
+        }
+
+        .acoes-cabecalho {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .botao {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .botao-primario {
+            background: var(--gradiente-1);
+            color: white;
+        }
+
+        .botao-primario:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .botao-secundario {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--borda);
+        }
+
+        .botao-secundario:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .placa-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .ponto-status {
+            width: 8px;
+            height: 8px;
+            background: var(--acento-verde);
+            border-radius: 50%;
+            animation: piscar 1.5s infinite;
+        }
+
+        @keyframes piscar {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .abas-navegacao {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .aba {
+            padding: 12px 24px;
+            background: var(--bg-cartao);
+            border: 1px solid var(--borda);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .aba:hover {
+            background: var(--bg-cartao-hover);
+            border-color: var(--acento-roxo);
+        }
+
+        .aba.ativa {
+            background: var(--gradiente-1);
+            border-color: transparent;
+        }
+
+        .grade-loterias {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .cartao-loteria {
+            background: var(--bg-cartao);
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cartao-loteria::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .cartao-loteria.megasena::before { background: var(--acento-verde); }
+        .cartao-loteria.lotofacil::before { background: var(--acento-roxo); }
+        .cartao-loteria.lotomania::before { background: var(--acento-vermelho); }
+        .cartao-loteria.quina::before { background: var(--acento-azul); }
+        .cartao-loteria.loteca::before { background: var(--acento-amarelo); }
+        .cartao-loteria.timemania::before { background: var(--acento-laranja); }
+        .cartao-loteria.diadesorte::before { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+
+        .cartao-loteria:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .cabecalho-loteria {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .nome-loteria {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icone-loteria {
+            font-size: 28px;
+        }
+
+        .titulo-loteria {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .concurso-loteria {
+            font-size: 0.85rem;
+            color: var(--texto-secundario);
+        }
+
+        .valor-loteria {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--acento-verde);
+            text-align: right;
+        }
+
+        .valor-loteria small {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--texto-secundario);
+            font-weight: 400;
+        }
+
+        .exibicao-numeros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+            justify-content: center;
+        }
+
+        .bola-numero {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #2a2a5a 0%, #1a1a3e 100%);
+            border: 2px solid var(--borda);
+            transition: all 0.3s ease;
+        }
+
+        .bola-numero:hover {
+            transform: scale(1.15);
+            border-color: var(--acento-verde);
+            box-shadow: 0 0 15px rgba(0, 212, 170, 0.3);
+        }
+
+        .metadados-loteria {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--borda);
+        }
+
+        .item-meta {
+            text-align: center;
+        }
+
+        .rotulo-meta {
+            font-size: 0.75rem;
+            color: var(--texto-secundario);
+            margin-bottom: 4px;
+        }
+
+        .valor-meta {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .titulo-secao {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .titulo-secao i {
+            color: var(--acento-roxo);
+        }
+
+        .painel-ia {
+            background: var(--bg-cartao);
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 2rem;
+        }
+
+        .cabecalho-ia {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .placa-ia {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--acento-roxo);
+        }
+
+        .grade-sugestoes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .cartao-sugestao {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--borda);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .cartao-sugestao:hover {
+            border-color: var(--acento-verde);
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .cabecalho-sugestao {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .rotulo-sugestao {
+            font-weight: 600;
+            color: var(--texto-secundario);
+        }
+
+        .barra-confianca {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .preenchimento-confianca {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .preenchimento-confianca.alta { background: var(--acento-verde); }
+        .preenchimento-confianca.media { background: var(--acento-amarelo); }
+        .preenchimento-confianca.baixa { background: var(--acento-laranja); }
+
+        .numeros-sugestao {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 12px 0;
+        }
+
+        .numero-sugestao {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: var(--gradiente-1);
+        }
+
+        .motivos-sugestao {
+            font-size: 0.8rem;
+            color: var(--texto-secundario);
+            margin-top: 8px;
+        }
+
+        .motivos-sugestao i {
+            color: var(--acento-verde);
+            margin-right: 4px;
+        }
+
+        .grade-estatisticas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .cartao-estatistica {
+            background: var(--bg-cartao);
+            border: 1px solid var(--borda);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .titulo-estatistica {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .titulo-estatistica i {
+            color: var(--acento-azul);
+        }
+
+        .barra-frequencia {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .numero-freq {
+            width: 30px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .container-barra-freq {
+            flex: 1;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .preenchimento-barra-freq {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .contagem-freq {
+            width: 40px;
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--texto-secundario);
+        }
+
+        .painel-calculadora {
+            background: var(--bg-cartao);
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 2rem;
+        }
+
+        .grade-calculadora {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .item-calculadora {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .rotulo-calculadora {
+            font-size: 0.85rem;
+            color: var(--texto-secundario);
+            margin-bottom: 8px;
+        }
+
+        .valor-calculadora {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--acento-verde);
+        }
+
+        .sub-calculadora {
+            font-size: 0.75rem;
+            color: var(--texto-secundario);
+            margin-top: 4px;
+        }
+
+        .carregando {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .girando {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--borda);
+            border-top-color: var(--acento-roxo);
+            border-radius: 50%;
+            animation: girar 1s linear infinite;
+        }
+
+        @keyframes girar {
+            to { transform: rotate(360deg); }
+        }
+
+        .texto-carregando {
+            margin-top: 16px;
+            color: var(--texto-secundario);
+        }
+
+        .rodape {
+            text-align: center;
+            padding: 2rem;
+            color: var(--texto-secundario);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--borda);
+            margin-top: 2rem;
+        }
+
+        .rodape a {
+            color: var(--acento-roxo);
+            text-decoration: none;
+        }
+
+        .conteudo-aba {
+            display: none;
+        }
+
+        .conteudo-aba.ativo {
+            display: block;
+        }
+
+        .fade-in {
+            animation: aparecer 0.5s ease;
+        }
+
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .deslizar-in {
+            animation: deslizar 0.4s ease;
+        }
+
+        @keyframes deslizar {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .dica {
+            position: relative;
+        }
+
+        .dica::after {
+            content: attr(data-dica);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 12px;
+            background: var(--bg-secundario);
+            border: 1px solid var(--borda);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .dica:hover::after {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .conteudo-cabecalho {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .grade-loterias {
+                grid-template-columns: 1fr;
+            }
+            
+            .bola-numero {
+                width: 38px;
+                height: 38px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animacao-fundo"></div>
+
+    <header class="cabecalho">
+        <div class="conteudo-cabecalho">
+            <div class="logo">
+                <div class="icone-logo">🎰</div>
+                <div>
+                    <h1>Loteria Federal</h1>
+                    <span>Dashboard Completo com IA</span>
+                </div>
+            </div>
+            <div class="acoes-cabecalho">
+                <div class="placa-status">
+                    <span class="ponto-status"></span>
+                    <span>API Conectada</span>
+                </div>
+                <button class="botao botao-secundario" onclick="atualizarTudo()">
+                    <i class="fas fa-sync-alt"></i> Atualizar
+                </button>
+                <button class="botao botao-primario" onclick="gerarNovasSugestoes()">
+                    <i class="fas fa-magic"></i> Nova Sugestao IA
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="abas-navegacao">
+            <div class="aba ativa" onclick="mudarAba('painel')">
+                <i class="fas fa-th-large"></i> Painel
+            </div>
+            <div class="aba" onclick="mudarAba('analise')">
+                <i class="fas fa-chart-line"></i> Analise IA
+            </div>
+            <div class="aba" onclick="mudarAba('estatisticas')">
+                <i class="fas fa-chart-bar"></i> Estatisticas
+            </div>
+            <div class="aba" onclick="mudarAba('calculadora')">
+                <i class="fas fa-calculator"></i> Calculadora
+            </div>
+            <div class="aba" onclick="mudarAba('historico')">
+                <i class="fas fa-history"></i> Historico
+            </div>
+        </div>
+
+        <!-- Aba Painel -->
+        <div id="aba-painel" class="conteudo-aba ativo">
+            <div class="grade-loterias" id="gradeLoterias"></div>
+
+            <div class="painel-ia" id="painelIa">
+                <div class="cabecalho-ia">
+                    <h2 class="titulo-secao">
+                        <i class="fas fa-brain"></i> Sugestoes da IA
+                    </h2>
+                    <div class="placa-ia">
+                        <i class="fas fa-robot"></i> Analise Inteligente
+                    </div>
+                </div>
+                <div class="grade-sugestoes" id="gradeSugestoes"></div>
+            </div>
+        </div>
+
+        <!-- Aba Analise -->
+        <div id="aba-analise" class="conteudo-aba">
+            <div class="titulo-secao">
+                <i class="fas fa-brain"></i> Analise Detalhada com IA
+            </div>
+            <div class="grade-estatisticas" id="gradeAnalise"></div>
+        </div>
+
+        <!-- Aba Estatisticas -->
+        <div id="aba-estatisticas" class="conteudo-aba">
+            <div class="titulo-secao">
+                <i class="fas fa-chart-bar"></i> Estatisticas Completas
+            </div>
+            <div class="grade-estatisticas" id="gradeEstatisticas"></div>
+        </div>
+
+        <!-- Aba Calculadora -->
+        <div id="aba-calculadora" class="conteudo-aba">
+            <div class="painel-calculadora">
+                <h2 class="titulo-secao">
+                    <i class="fas fa-calculator"></i> Calculadora de Apostas
+                </h2>
+                <div class="grade-calculadora" id="gradeCalculadora"></div>
+            </div>
+        </div>
+
+        <!-- Aba Historico -->
+        <div id="aba-historico" class="conteudo-aba">
+            <div class="titulo-secao">
+                <i class="fas fa-history"></i> Historico de Sorteios
+            </div>
+            <div id="conteudoHistorico"></div>
+        </div>
+    </div>
+
+    <footer class="rodape">
+        <p>Loteria Federal - Dashboard Completo com Analise IA</p>
+        <p>Dados oficiais da <a href="https://loterias.caixa.gov.br" target="_blank">Caixa Economica Federal</a></p>
+        <p style="margin-top: 8px; font-size: 0.75rem;">
+            <i class="fas fa-exclamation-triangle"></i> 
+            Este sistema e apenas para fins educacionais. Loterias sao jogos de azar.
+        </p>
+    </footer>
+
+    <script>
+        const API_BASE = '';
+        const CONFIG_LOTERIAS = {
+            megasena: { nome: 'Mega-Sena', icone: '🎰', cor: '#00A859', qtdEscolher: 6 },
+            lotofacil: { nome: 'Lotofacil', icone: '🎯', cor: '#9B59B6', qtdEscolher: 15 },
+            lotomania: { nome: 'Lotomania', icone: '🍀', cor: '#E74C3C', qtdEscolher: 20 },
+            quina: { nome: 'Quina', icone: '⭐', cor: '#3498DB', qtdEscolher: 5 },
+            loteca: { nome: 'Loteca', icone: '⚽', cor: '#F39C12', qtdEscolher: 14 },
+            timemania: { nome: 'Timemania', icone: '🎮', cor: '#1ABC9C', qtdEscolher: 10 },
+            diadesorte: { nome: 'Dia de Sorte', icone: '📅', cor: '#E67E22', qtdEscolher: 7 }
+        };
+
+        let abaAtual = 'painel';
+        let dadosLoteria = {};
+        let sugestoes = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarTodosUltimos();
+            carregarSugestoes();
+            carregarCalculadora();
+        });
+
+        async function buscarAPI(endpoint) {
+            try {
+                const resposta = await fetch(`${API_BASE}${endpoint}`);
+                if (!resposta.ok) throw new Error('Erro na API');
+                return await resposta.json();
+            } catch (erro) {
+                console.error(`Erro ao buscar ${endpoint}:`, erro);
+                return null;
+            }
+        }
+
+        async function carregarTodosUltimos() {
+            mostrarCarregando('gradeLoterias');
+            const dados = await buscarAPI('/api/todos-ultimos');
+            if (dados) {
+                dadosLoteria = dados;
+                renderizarCartoesLoteria(dados);
+            }
+        }
+
+        async function carregarSugestoes() {
+            mostrarCarregando('gradeSugestoes');
+            const loterias = ['megasena', 'lotofacil', 'quina'];
+            const grade = document.getElementById('gradeSugestoes');
+            grade.innerHTML = '';
+
+            for (const loteria of loterias) {
+                const dados = await buscarAPI(`/api/analise/${loteria}`);
+                if (dados && dados.sugestoes) {
+                    sugestoes[loteria] = dados.sugestoes;
+                    dados.sugestoes.forEach((sugestao, indice) => {
+                        grade.appendChild(criarCartaoSugestao(loteria, sugestao, indice));
+                    });
+                }
+            }
+        }
+
+        async function carregarCalculadora() {
+            const dados = await buscarAPI('/api/calculadora-apostas');
+            if (dados) {
+                renderizarCalculadora(dados);
+            }
+        }
+
+        function renderizarCartoesLoteria(dados) {
+            const grade = document.getElementById('gradeLoterias');
+            grade.innerHTML = '';
+
+            for (const [chave, resultado] of Object.entries(dados)) {
+                const config = CONFIG_LOTERIAS[chave];
+                if (!config || !resultado) continue;
+
+                const cartao = document.createElement('div');
+                cartao.className = `cartao-loteria ${chave} fade-in`;
+                cartao.style.cursor = 'pointer';
+                cartao.onclick = () => window.location.href = `/detalhes/${chave}`;
+                
+                const dezenas = resultado.listaDezenas || [];
+                const proximoConcurso = resultado.numeroConcursoProximo || resultado.numero + 1;
+                const valorEstimado = resultado.valorEstimadoProximoConcurso || 0;
+                const acumulado = resultado.acumulado;
+                
+                cartao.innerHTML = `
+                    <div class="cabecalho-loteria">
+                        <div class="nome-loteria">
+                            <span class="icone-loteria">${config.icone}</span>
+                            <div>
+                                <div class="titulo-loteria">${config.nome}</div>
+                                <div class="concurso-loteria">Concurso #${resultado.numero}</div>
+                            </div>
+                        </div>
+                        <div class="valor-loteria">
+                            R$ ${formatarMoeda(valorEstimado)}
+                            <small>Premio Estimado</small>
+                        </div>
+                    </div>
+                    
+                    <div class="exibicao-numeros">
+                        ${dezenas.map(n => `
+                            <div class="bola-numero dica" data-dica="Numero ${n}">
+                                ${n}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="metadados-loteria">
+                        <div class="item-meta">
+                            <div class="rotulo-meta">Data do Sorteio</div>
+                            <div class="valor-meta">${resultado.dataApuracao || 'N/A'}</div>
+                        </div>
+                        <div class="item-meta">
+                            <div class="rotulo-meta">Proximo Concurso</div>
+                            <div class="valor-meta">#${proximoConcurso}</div>
+                        </div>
+                        <div class="item-meta">
+                            <div class="rotulo-meta">Arrecadacao</div>
+                            <div class="valor-meta">R$ ${formatarMoeda(resultado.valorArrecadado || 0)}</div>
+                        </div>
+                        <div class="item-meta">
+                            <div class="rotulo-meta">Status</div>
+                            <div class="valor-meta" style="color: ${acumulado ? '#f59e0b' : '#22c55e'}">
+                                ${acumulado ? 'Acumulou!' : 'Teve Ganhador'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 16px; text-align: center; padding-top: 12px; border-top: 1px solid var(--borda); color: var(--acento-roxo); font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fas fa-arrow-right"></i> Ver Analise Completa
+                    </div>
+                `;
+                
+                grade.appendChild(cartao);
+            }
+        }
+
+        function criarCartaoSugestao(loteria, sugestao, indice) {
+            const config = CONFIG_LOTERIAS[loteria];
+            const cartao = document.createElement('div');
+            cartao.className = 'cartao-sugestao deslizar-in';
+            
+            const confianca = sugestao.confianca;
+            const classeConfianca = confianca >= 70 ? 'alta' : confianca >= 50 ? 'media' : 'baixa';
+            
+            cartao.innerHTML = `
+                <div class="cabecalho-sugestao">
+                    <span class="rotulo-sugestao">${config.nome} - Sugestao ${indice + 1}</span>
+                    <span style="color: var(--acento-verde); font-weight: 600;">${confianca.toFixed(0)}%</span>
+                </div>
+                <div class="numeros-sugestao">
+                    ${sugestao.numeros.map(n => `
+                        <div class="numero-sugestao">${n.toString().padStart(2, '0')}</div>
+                    `).join('')}
+                </div>
+                <div class="barra-confianca">
+                    <div class="preenchimento-confianca ${classeConfianca}" style="width: ${confianca}%"></div>
+                </div>
+                <div class="motivos-sugestao">
+                    ${sugestao.motivos.map(m => `
+                        <div><i class="fas fa-check-circle"></i> ${m}</div>
+                    `).join('')}
+                </div>
+            `;
+            
+            return cartao;
+        }
+
+        function renderizarCalculadora(dados) {
+            const grade = document.getElementById('gradeCalculadora');
+            grade.innerHTML = '';
+
+            for (const [chave, calc] of Object.entries(dados)) {
+                const item = document.createElement('div');
+                item.className = 'item-calculadora';
+                
+                item.innerHTML = `
+                    <div style="font-size: 2rem; margin-bottom: 8px;">${calc.icone}</div>
+                    <div class="rotulo-calculadora">${calc.nome}</div>
+                    <div class="valor-calculadora">R$ ${calc.custo_por_jogo.toFixed(2)}</div>
+                    <div class="sub-calculadora">por jogo</div>
+                    <div style="margin-top: 12px; font-size: 0.8rem; color: var(--texto-secundario);">
+                        6 numeros: R$ ${calc.custo_por_jogo.toFixed(2)}<br>
+                        7 numeros: R$ ${(calc.custo_por_jogo * 7).toFixed(2)}<br>
+                        8 numeros: R$ ${(calc.custo_por_jogo * 28).toFixed(2)}
+                    </div>
+                `;
+                
+                grade.appendChild(item);
+            }
+        }
+
+        function mudarAba(aba) {
+            abaAtual = aba;
+            
+            document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+            document.querySelectorAll('.conteudo-aba').forEach(c => c.classList.remove('ativo'));
+            
+            event.target.closest('.aba').classList.add('ativa');
+            document.getElementById(`aba-${aba}`).classList.add('ativo');
+            
+            if (aba === 'estatisticas') {
+                carregarVisualizacaoEstatisticas();
+            } else if (aba === 'historico') {
+                carregarVisualizacaoHistorico();
+            }
+        }
+
+        async function carregarVisualizacaoEstatisticas() {
+            const grade = document.getElementById('gradeEstatisticas');
+            mostrarCarregando('gradeEstatisticas');
+            
+            const loterias = ['megasena', 'lotofacil', 'quina', 'lotomania'];
+            grade.innerHTML = '';
+            
+            for (const loteria of loterias) {
+                const dados = await buscarAPI(`/api/estatisticas/${loteria}`);
+                if (dados && dados.frequencia) {
+                    const config = CONFIG_LOTERIAS[loteria];
+                    const cartao = document.createElement('div');
+                    cartao.className = 'cartao-estatistica fade-in';
+                    
+                    const numsQuentes = dados.frequencia.mais_frequentes.slice(0, 8);
+                    const contagemMax = Math.max(...numsQuentes.map(([, v]) => v.vezes), 1);
+                    
+                    cartao.innerHTML = `
+                        <div class="titulo-estatistica">
+                            <span>${config.icone}</span>
+                            <span>${config.nome} - Numeros Mais Frequentes</span>
+                        </div>
+                        ${numsQuentes.map(([num, info]) => `
+                            <div class="barra-frequencia">
+                                <span class="numero-freq">${num.toString().padStart(2, '0')}</span>
+                                <div class="container-barra-freq">
+                                    <div class="preenchimento-barra-freq" style="width: ${(info.vezes / contagemMax) * 100}%; background: ${config.cor};"></div>
+                                </div>
+                                <span class="contagem-freq">${info.vezes}x</span>
+                            </div>
+                        `).join('')}
+                    `;
+                    
+                    grade.appendChild(cartao);
+                }
+            }
+        }
+
+        async function carregarVisualizacaoHistorico() {
+            const conteudo = document.getElementById('conteudoHistorico');
+            mostrarCarregando('conteudoHistorico');
+            
+            const loterias = ['megasena', 'lotofacil', 'quina'];
+            conteudo.innerHTML = '';
+            
+            for (const loteria of loterias) {
+                const dados = await buscarAPI(`/api/historico/${loteria}/10`);
+                if (dados && dados.length > 0) {
+                    const config = CONFIG_LOTERIAS[loteria];
+                    const secao = document.createElement('div');
+                    secao.className = 'fade-in';
+                    secao.style.marginBottom = '2rem';
+                    
+                    secao.innerHTML = `
+                        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.5rem;">${config.icone}</span>
+                            ${config.nome} - Ultimos 10 Concursos
+                        </h3>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: var(--bg-cartao);">
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid var(--borda);">Concurso</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid var(--borda);">Data</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid var(--borda);">Numeros Sorteados</th>
+                                        <th style="padding: 12px; text-align: right; border-bottom: 1px solid var(--borda);">Arrecadacao</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${dados.map(r => `
+                                        <tr style="background: var(--bg-secundario);">
+                                            <td style="padding: 12px; border-bottom: 1px solid var(--borda);">#${r.numero}</td>
+                                            <td style="padding: 12px; border-bottom: 1px solid var(--borda);">${r.dataApuracao}</td>
+                                            <td style="padding: 12px; border-bottom: 1px solid var(--borda);">
+                                                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                                    ${(r.listaDezenas || []).map(n => `
+                                                        <span style="background: var(--gradiente-1); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">${n}</span>
+                                                    `).join('')}
+                                                </div>
+                                            </td>
+                                            <td style="padding: 12px; text-align: right; border-bottom: 1px solid var(--borda);">R$ ${formatarMoeda(r.valorArrecadado || 0)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    conteudo.appendChild(secao);
+                }
+            }
+        }
+
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valor);
+        }
+
+        function mostrarCarregando(elementoId) {
+            const el = document.getElementById(elementoId);
+            if (el) {
+                el.innerHTML = `
+                    <div class="carregando">
+                        <div class="girando"></div>
+                        <div class="texto-carregando">Carregando dados...</div>
+                    </div>
+                `;
+            }
+        }
+
+        function atualizarTudo() {
+            carregarTodosUltimos();
+            carregarSugestoes();
+            carregarCalculadora();
+        }
+
+        async function gerarNovasSugestoes() {
+            carregarSugestoes();
+        }
+
+        setInterval(atualizarTudo, 300000);
+    </script>
+</body>
+</html>

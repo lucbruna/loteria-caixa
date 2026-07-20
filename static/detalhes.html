@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Loteria - Loteria Federal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primario: #0a0a1a;
+            --bg-secundario: #111128;
+            --bg-cartao: #1a1a3e;
+            --bg-cartao-hover: #222255;
+            --texto-primario: #ffffff;
+            --texto-secundario: #a0a0c0;
+            --acento-verde: #00d4aa;
+            --acento-roxo: #a855f7;
+            --acento-azul: #3b82f6;
+            --acento-vermelho: #ef4444;
+            --acento-amarelo: #f59e0b;
+            --acento-laranja: #f97316;
+            --borda: #2a2a5a;
+            --gradiente-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primario);
+            color: var(--texto-primario);
+            min-height: 100vh;
+        }
+
+        .cabecalho {
+            background: linear-gradient(135deg, rgba(26, 26, 62, 0.98) 0%, rgba(17, 17, 40, 0.99) 100%);
+            border-bottom: 1px solid var(--borda);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .conteudo-cabecalho {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .botao-voltar {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .botao-voltar:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .titulo-pagina {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Cartao do Ultimo Sorteio */
+        .cartao-ultimo {
+            background: var(--bg-cartao);
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cartao-ultimo::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+        }
+
+        .cabecalho-resultado {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .info-resultado h2 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .info-resultado .concurso {
+            font-size: 1rem;
+            color: var(--texto-secundario);
+        }
+
+        .valor-acumulado {
+            text-align: right;
+        }
+
+        .valor-acumulado .label {
+            font-size: 0.85rem;
+            color: var(--texto-secundario);
+            margin-bottom: 4px;
+        }
+
+        .valor-acumulado .valor {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--acento-verde);
+        }
+
+        .valor-acumulado .proximo {
+            font-size: 0.9rem;
+            color: var(--acento-amarelo);
+            margin-top: 4px;
+        }
+
+        .numeros-sorteados {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .bola {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2a2a5a 0%, #1a1a3e 100%);
+            border: 3px solid var(--borda);
+            transition: all 0.3s;
+            animation: aparecer 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .bola:hover {
+            transform: scale(1.15);
+            border-color: var(--acento-verde);
+            box-shadow: 0 0 20px rgba(0, 212, 170, 0.4);
+        }
+
+        @keyframes aparecer {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .metadados-resultado {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--borda);
+        }
+
+        .item-meta {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .rotulo-meta {
+            font-size: 0.75rem;
+            color: var(--texto-secundario);
+            margin-bottom: 6px;
+        }
+
+        .valor-meta {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Secao de Sugestoes IA */
+        .secao-sugestoes {
+            background: var(--bg-cartao);
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 2rem;
+        }
+
+        .cabecalho-secao {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .titulo-secao {
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .controles-quantidade {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .controles-quantidade label {
+            color: var(--texto-secundario);
+            font-size: 0.9rem;
+        }
+
+        .controles-quantidade select,
+        .controles-quantidade input {
+            padding: 10px 16px;
+            background: var(--bg-secundario);
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .controles-quantidade select:focus,
+        .controles-quantidade input:focus {
+            outline: none;
+            border-color: var(--acento-roxo);
+        }
+
+        .botao-gerar {
+            padding: 12px 24px;
+            background: var(--gradiente-1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .botao-gerar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .botao-gerar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .grade-combinacoes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .grade-combinacoes::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .grade-combinacoes::-webkit-scrollbar-track {
+            background: var(--bg-secundario);
+            border-radius: 4px;
+        }
+
+        .grade-combinacoes::-webkit-scrollbar-thumb {
+            background: var(--borda);
+            border-radius: 4px;
+        }
+
+        .cartao-combinacao {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--borda);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s;
+            animation: deslizar 0.3s ease forwards;
+            opacity: 0;
+        }
+
+        .cartao-combinacao:hover {
+            border-color: var(--acento-verde);
+            background: rgba(0, 212, 170, 0.05);
+            transform: translateY(-2px);
+        }
+
+        @keyframes deslizar {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cabecalho-combinacao {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .numero-jogo {
+            font-weight: 700;
+            color: var(--acento-roxo);
+            font-size: 0.9rem;
+        }
+
+        .etiqueta-estrategia {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .etiqueta-estrategia.quente { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .etiqueta-estrategia.tendencia { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .etiqueta-estrategia.atrasado { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .etiqueta-estrategia.misto { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        .etiqueta-estrategia.aleatorio { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+        .numeros-combinacao {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .numero-bola {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            background: var(--gradiente-1);
+        }
+
+        .barra-confianca {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .preenchimento-confianca {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .preenchimento-confianca.alta { background: var(--acento-verde); }
+        .preenchimento-confianca.media { background: var(--acento-amarelo); }
+        .preenchimento-confianca.baixa { background: var(--acento-laranja); }
+
+        .info-confianca {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--texto-secundario);
+        }
+
+        /* Secao de Estatisticas */
+        .secao-estatisticas {
+            background: var(--bg-cartao);
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 2rem;
+        }
+
+        .grade-estatisticas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .cartao-estatistica {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .titulo-estatistica {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--acento-azul);
+        }
+
+        .barra-frequencia {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .numero-freq {
+            width: 30px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .container-barra {
+            flex: 1;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .preenchimento-barra {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .contagem-freq {
+            width: 35px;
+            text-align: right;
+            font-size: 0.8rem;
+            color: var(--texto-secundario);
+        }
+
+        .carregando {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+        }
+
+        .girando {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--borda);
+            border-top-color: var(--acento-roxo);
+            border-radius: 50%;
+            animation: girar 1s linear infinite;
+        }
+
+        @keyframes girar {
+            to { transform: rotate(360deg); }
+        }
+
+        .texto-carregando {
+            margin-top: 20px;
+            color: var(--texto-secundario);
+            font-size: 1.1rem;
+        }
+
+        .contador-resultados {
+            text-align: center;
+            padding: 16px;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+        }
+
+        .contador-resultados strong {
+            color: var(--acento-roxo);
+        }
+
+        .aviso-ia {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--acento-amarelo);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .bola { width: 48px; height: 48px; font-size: 1.1rem; }
+            .grade-combinacoes { grid-template-columns: 1fr; }
+            .cabecalho-resultado { flex-direction: column; }
+            .valor-acumulado { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+    <header class="cabecalho">
+        <div class="conteudo-cabecalho">
+            <a href="/" class="botao-voltar">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            <div class="titulo-pagina" id="tituloPagina">
+                <span id="iconeLoteria">🎰</span>
+                <span id="nomeLoteria">Carregando...</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Loading -->
+        <div id="estadoCarregando" class="carregando">
+            <div class="girando"></div>
+            <div class="texto-carregando">Carregando dados da loteria...</div>
+        </div>
+
+        <!-- Conteudo Principal -->
+        <div id="conteudoPrincipal" style="display: none;">
+            <!-- Ultimo Sorteio -->
+            <div class="cartao-ultimo" id="cartaoUltimo">
+                <div class="cabecalho-resultado">
+                    <div class="info-resultado">
+                        <h2 id="tituloResultado">Ultimo Sorteio</h2>
+                        <div class="concurso" id="infoConcurso">Concurso #0000</div>
+                    </div>
+                    <div class="valor-acumulado">
+                        <div class="label">Valor Estimado Proximo</div>
+                        <div class="valor" id="valorEstimado">R$ 0,00</div>
+                        <div class="proximo" id="infoAcumulado"></div>
+                    </div>
+                </div>
+                <div class="numeros-sorteados" id="numerosSorteados"></div>
+                <div class="metadados-resultado">
+                    <div class="item-meta">
+                        <div class="rotulo-meta">Data do Sorteio</div>
+                        <div class="valor-meta" id="dataSorteio">N/A</div>
+                    </div>
+                    <div class="item-meta">
+                        <div class="rotulo-meta">Arrecadacao</div>
+                        <div class="valor-meta" id="valorArrecadado">R$ 0,00</div>
+                    </div>
+                    <div class="item-meta">
+                        <div class="rotulo-meta">Proximo Concurso</div>
+                        <div class="valor-meta" id="proximoConcurso">#0000</div>
+                    </div>
+                    <div class="item-meta">
+                        <div class="rotulo-meta">Local do Sorteio</div>
+                        <div class="valor-meta" id="localSorteio">N/A</div>
+                    </div>
+                    <div class="item-meta">
+                        <div class="rotulo-meta">Status</div>
+                        <div class="valor-meta" id="statusSorteio">N/A</div>
+                    </div>
+                    <div class="item-meta">
+                        <div class="rotulo-meta">Premiacao</div>
+                        <div class="valor-meta" id="premiacaoInfo">N/A</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sugestoes IA -->
+            <div class="secao-sugestoes">
+                <div class="cabecalho-secao">
+                    <h2 class="titulo-secao">
+                        <i class="fas fa-brain"></i> Sugestoes da IA
+                    </h2>
+                    <div class="controles-quantidade">
+                        <label>Quantidade de jogos:</label>
+                        <select id="selectQuantidade">
+                            <option value="5">5 jogos</option>
+                            <option value="10" selected>10 jogos</option>
+                            <option value="20">20 jogos</option>
+                            <option value="50">50 jogos</option>
+                            <option value="100">100 jogos</option>
+                            <option value="500">500 jogos</option>
+                            <option value="1000">1.000 jogos</option>
+                            <option value="5000">5.000 jogos</option>
+                            <option value="10000">10.000 jogos</option>
+                            <option value="20000">20.000 jogos</option>
+                        </select>
+                        <button class="botao-gerar" onclick="gerarCombinacoes()">
+                            <i class="fas fa-magic"></i> Gerar Jogos
+                        </button>
+                        <button class="botao-gerar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" onclick="gerarAnaliseUltra()">
+                            <i class="fas fa-bolt"></i> Analise Ultra IA
+                        </button>
+                        <button class="botao-gerar" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);" onclick="gerarAnaliseGlobal()">
+                            <i class="fas fa-globe"></i> Analise Global
+                        </button>
+                    </div>
+                </div>
+
+                <div class="aviso-ia">
+                    <i class="fas fa-info-circle"></i>
+                    <span>
+                        <strong>IA:</strong> Estatistica basica | 
+                        <strong>Ultra:</strong> 9 algoritmos ML | 
+                        <strong>Global:</strong> Tecnicas de todas as escolas mundiais (Europa, Americas, Asia)
+                    </span>
+                </div>
+
+                <div class="contador-resultados" id="contadorResultados" style="display: none;">
+                    <strong id="totalGeradas">0</strong> jogos gerados com base em analise estatistica avancada
+                </div>
+
+                <div class="grade-combinacoes" id="gradeCombinacoes">
+                    <div class="carregando" style="grid-column: 1/-1;">
+                        <div class="girando"></div>
+                        <div class="texto-carregando">Clique em "Gerar Jogos" para iniciar a analise</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatisticas -->
+            <div class="secao-estatisticas">
+                <h2 class="titulo-secao" style="margin-bottom: 20px;">
+                    <i class="fas fa-chart-bar"></i> Estatisticas Detalhadas
+                </h2>
+                <div class="grade-estatisticas" id="gradeEstatisticas"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let loteriaAtual = '';
+        let dadosCompletos = null;
+
+        // Obter loteria da URL
+        const pathParts = window.location.pathname.split('/');
+        loteriaAtual = pathParts[pathParts.length - 1];
+
+        const CONFIG_LOTERIAS = {
+            megasena: { nome: 'Mega-Sena', icone: '🎰', cor: '#00A859' },
+            lotofacil: { nome: 'Lotofacil', icone: '🎯', cor: '#9B59B6' },
+            lotomania: { nome: 'Lotomania', icone: '🍀', cor: '#E74C3C' },
+            quina: { nome: 'Quina', icone: '⭐', cor: '#3498DB' },
+            loteca: { nome: 'Loteca', icone: '⚽', cor: '#F39C12' },
+            timemania: { nome: 'Timemania', icone: '🎮', cor: '#1ABC9C' },
+            diadesorte: { nome: 'Dia de Sorte', icone: '📅', cor: '#E67E22' }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!loteriaAtual || !CONFIG_LOTERIAS[loteriaAtual]) {
+                window.location.href = '/';
+                return;
+            }
+            document.title = `${CONFIG_LOTERIAS[loteriaAtual].nome} - Loteria Federal`;
+            document.getElementById('iconeLoteria').textContent = CONFIG_LOTERIAS[loteriaAtual].icone;
+            document.getElementById('nomeLoteria').textContent = CONFIG_LOTERIAS[loteriaAtual].nome;
+            document.getElementById('cartaoUltimo').style.setProperty('--cor-loteria', CONFIG_LOTERIAS[loteriaAtual].cor);
+            document.getElementById('cartaoUltimo').querySelector('::before') || 
+                document.documentElement.style.setProperty('--cor-loteria', CONFIG_LOTERIAS[loteriaAtual].cor);
+            
+            carregarDados();
+        });
+
+        async function carregarDados() {
+            try {
+                const resposta = await fetch(`/api/detalhes/${loteriaAtual}`);
+                if (!resposta.ok) throw new Error('Erro ao carregar dados');
+                dadosCompletos = await resposta.json();
+                
+                renderizarUltimoSorteio(dadosCompletos.ultimo_sorteio);
+                renderizarEstatisticas(dadosCompletos.estatisticas);
+                
+                document.getElementById('estadoCarregando').style.display = 'none';
+                document.getElementById('conteudoPrincipal').style.display = 'block';
+            } catch (erro) {
+                console.error('Erro:', erro);
+                document.getElementById('estadoCarregando').innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--acento-vermelho);"></i>
+                    <div class="texto-carregando">Erro ao carregar dados. Tente novamente.</div>
+                `;
+            }
+        }
+
+        function renderizarUltimoSorteio(resultado) {
+            if (!resultado) return;
+
+            const config = CONFIG_LOTERIAS[loteriaAtual];
+            const dezenas = resultado.listaDezenas || [];
+            
+            document.getElementById('tituloResultado').textContent = `Ultimo Sorteio - ${config.nome}`;
+            document.getElementById('infoConcurso').textContent = `Concurso #${resultado.numero}`;
+            document.getElementById('valorEstimado').textContent = formatarMoeda(resultado.valorEstimadoProximoConcurso || 0);
+            document.getElementById('proximoConcurso').textContent = `Proximo: #${resultado.numeroConcursoProximo || resultado.numero + 1}`;
+            document.getElementById('dataSorteio').textContent = resultado.dataApuracao || 'N/A';
+            document.getElementById('valorArrecadado').textContent = formatarMoeda(resultado.valorArrecadado || 0);
+            document.getElementById('proximoConcurso').textContent = `#${resultado.numeroConcursoProximo || resultado.numero + 1}`;
+            document.getElementById('localSorteio').textContent = resultado.nomeMunicipioUFSorteio || 'N/A';
+            
+            const acumulado = resultado.acumulado;
+            document.getElementById('statusSorteio').innerHTML = acumulado 
+                ? '<span style="color: #f59e0b;">Acumulou!</span>' 
+                : '<span style="color: #22c55e;">Teve Ganhador</span>';
+            
+            document.getElementById('infoAcumulado').textContent = acumulado 
+                ? `Acumulado: R$ ${formatarMoeda(resultado.valorAcumuladoProximoConcurso || 0)}` 
+                : '';
+
+            // Premiacao
+            if (resultado.listaRateioPremio && resultado.listaRateioPremio.length > 0) {
+                const premio6 = resultado.listaRateioPremio.find(p => p.faixa === 1);
+                if (premio6) {
+                    document.getElementById('premiacaoInfo').textContent = 
+                        `${premio6.numeroDeGanhadores} ganhador(es) - R$ ${formatarMoeda(premio6.valorPremio)}`;
+                }
+            }
+
+            // Renderizar numeros com animacao
+            const container = document.getElementById('numerosSorteados');
+            container.innerHTML = '';
+            dezenas.forEach((num, indice) => {
+                const bola = document.createElement('div');
+                bola.className = 'bola';
+                bola.textContent = num.toString().padStart(2, '0');
+                bola.style.animationDelay = `${indice * 0.1}s`;
+                container.appendChild(bola);
+            });
+        }
+
+        function renderizarEstatisticas(estatisticas) {
+            const grade = document.getElementById('gradeEstatisticas');
+            grade.innerHTML = '';
+            const config = CONFIG_LOTERIAS[loteriaAtual];
+
+            // Numeros Mais Frequentes
+            const cartaoQuentes = document.createElement('div');
+            cartaoQuentes.className = 'cartao-estatistica';
+            const maisFrequentes = estatisticas.frequencia.mais_frequentes.slice(0, 10);
+            const contagemMax = Math.max(...maisFrequentes.map(([, v]) => v.vezes), 1);
+            
+            cartaoQuentes.innerHTML = `
+                <div class="titulo-estatistica">
+                    <i class="fas fa-fire"></i> Numeros Mais Frequentes
+                </div>
+                ${maisFrequentes.map(([num, info]) => `
+                    <div class="barra-frequencia">
+                        <span class="numero-freq">${num.toString().padStart(2, '0')}</span>
+                        <div class="container-barra">
+                            <div class="preenchimento-barra" style="width: ${(info.vezes / contagemMax) * 100}%; background: ${config.cor};"></div>
+                        </div>
+                        <span class="contagem-freq">${info.vezes}x</span>
+                    </div>
+                `).join('')}
+            `;
+            grade.appendChild(cartaoQuentes);
+
+            // Numeros Menos Frequentes
+            const cartaoFrios = document.createElement('div');
+            cartaoFrios.className = 'cartao-estatistica';
+            const menosFrequentes = estatisticas.frequencia.menos_frequentes.slice(0, 10);
+            const contagemMin = Math.max(...menosFrequentes.map(([, v]) => v.vezes), 0);
+            
+            cartaoFrios.innerHTML = `
+                <div class="titulo-estatistica">
+                    <i class="fas fa-snowflake"></i> Numeros Menos Frequentes
+                </div>
+                ${menosFrequentes.map(([num, info]) => `
+                    <div class="barra-frequencia">
+                        <span class="numero-freq">${num.toString().padStart(2, '0')}</span>
+                        <div class="container-barra">
+                            <div class="preenchimento-barra" style="width: ${contagemMin > 0 ? (info.vezes / contagemMin) * 100 : 0}%; background: #3b82f6;"></div>
+                        </div>
+                        <span class="contagem-freq">${info.vezes}x</span>
+                    </div>
+                `).join('')}
+            `;
+            grade.appendChild(cartaoFrios);
+
+            // Pares Frequentes
+            if (estatisticas.pares && estatisticas.pares.pares_top) {
+                const cartaoPares = document.createElement('div');
+                cartaoPares.className = 'cartao-estatistica';
+                cartaoPares.innerHTML = `
+                    <div class="titulo-estatistica">
+                        <i class="fas fa-link"></i> Pares Mais Frequentes
+                    </div>
+                    ${estatisticas.pares.pares_top.slice(0, 10).map(([par, contagem]) => `
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--borda);">
+                            <span>${par[0].toString().padStart(2, '0')} - ${par[1].toString().padStart(2, '0')}</span>
+                            <span style="color: var(--acento-verde);">${contagem}x</span>
+                        </div>
+                    `).join('')}
+                `;
+                grade.appendChild(cartaoPares);
+            }
+
+            // Tendencias
+            if (estatisticas.tendencias) {
+                const cartaoTendencias = document.createElement('div');
+                cartaoTendencias.className = 'cartao-estatistica';
+                const emAlta = estatisticas.tendencias.em_alta || [];
+                const emBaixa = estatisticas.tendencias.em_baixa || [];
+                
+                cartaoTendencias.innerHTML = `
+                    <div class="titulo-estatistica">
+                        <i class="fas fa-chart-line"></i> Tendencias Recentes
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: #22c55e; font-weight: 600; margin-bottom: 8px;">
+                            <i class="fas fa-arrow-up"></i> Em Alta (${emAlta.length})
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            ${emAlta.length > 0 ? emAlta.map(n => `
+                                <span style="background: rgba(34, 197, 94, 0.2); padding: 4px 10px; border-radius: 12px; font-size: 0.85rem;">${n.toString().padStart(2, '0')}</span>
+                            `).join('') : '<span style="color: var(--texto-secundario);">Nenhum</span>'}
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: #ef4444; font-weight: 600; margin-bottom: 8px;">
+                            <i class="fas fa-arrow-down"></i> Em Baixa (${emBaixa.length})
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            ${emBaixa.length > 0 ? emBaixa.map(n => `
+                                <span style="background: rgba(239, 68, 68, 0.2); padding: 4px 10px; border-radius: 12px; font-size: 0.85rem;">${n.toString().padStart(2, '0')}</span>
+                            `).join('') : '<span style="color: var(--texto-secundario);">Nenhum</span>'}
+                        </div>
+                    </div>
+                `;
+                grade.appendChild(cartaoTendencias);
+            }
+        }
+
+        async function gerarCombinacoes() {
+            const quantidade = parseInt(document.getElementById('selectQuantidade').value);
+            const grade = document.getElementById('gradeCombinacoes');
+            const contador = document.getElementById('contadorResultados');
+            
+            grade.innerHTML = `
+                <div class="carregando" style="grid-column: 1/-1;">
+                    <div class="girando"></div>
+                    <div class="texto-carregando">Gerando ${quantidade.toLocaleString('pt-BR')} combinacoes com IA...</div>
+                </div>
+            `;
+            contador.style.display = 'none';
+
+            try {
+                const resposta = await fetch(`/api/combinacoes/${loteriaAtual}/${quantidade}`);
+                if (!resposta.ok) throw new Error('Erro ao gerar combinacoes');
+                
+                const dados = await resposta.json();
+                
+                document.getElementById('totalGeradas').textContent = dados.total_geradas.toLocaleString('pt-BR');
+                contador.style.display = 'block';
+                
+                renderizarCombinacoes(dados.combinacoes);
+            } catch (erro) {
+                console.error('Erro:', erro);
+                grade.innerHTML = `
+                    <div class="carregando" style="grid-column: 1/-1;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--acento-vermelho);"></i>
+                        <div class="texto-carregando">Erro ao gerar combinacoes. Tente novamente.</div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderizarCombinacoes(combinacoes) {
+            const grade = document.getElementById('gradeCombinacoes');
+            grade.innerHTML = '';
+
+            combinacoes.forEach((comb, indice) => {
+                const cartao = document.createElement('div');
+                cartao.className = 'cartao-combinacao';
+                cartao.style.animationDelay = `${Math.min(indice * 0.02, 1)}s`;
+                
+                const confianca = comb.confianca;
+                const classeConfianca = confianca >= 70 ? 'alta' : confianca >= 50 ? 'media' : 'baixa';
+                
+                cartao.innerHTML = `
+                    <div class="cabecalho-combinacao">
+                        <span class="numero-jogo">Jogo #${(indice + 1).toString().padStart(3, '0')}</span>
+                        <span class="etiqueta-estrategia ${comb.estrategia}">${comb.estrategia}</span>
+                    </div>
+                    <div class="numeros-combinacao">
+                        ${comb.numeros.map(n => `
+                            <div class="numero-bola">${n.toString().padStart(2, '0')}</div>
+                        `).join('')}
+                    </div>
+                    <div class="barra-confianca">
+                        <div class="preenchimento-confianca ${classeConfianca}" style="width: ${confianca}%"></div>
+                    </div>
+                    <div class="info-confianca">
+                        <span>${comb.motivos[0] || 'Analise estatistica'}</span>
+                        <span>${confianca}% confianca</span>
+                    </div>
+                `;
+                
+                grade.appendChild(cartao);
+            });
+        }
+
+        async function gerarAnaliseUltra() {
+            const quantidade = parseInt(document.getElementById('selectQuantidade').value);
+            const grade = document.getElementById('gradeCombinacoes');
+            const contador = document.getElementById('contadorResultados');
+            
+            grade.innerHTML = `
+                <div class="carregando" style="grid-column: 1/-1;">
+                    <div class="girando"></div>
+                    <div class="texto-carregando">
+                        <div style="font-size: 1.2rem; margin-bottom: 10px;">Executando 9 Algoritmos de Machine Learning...</div>
+                        <div style="font-size: 0.9rem; color: var(--texto-secundario);">
+                            Random Forest | Naive Bayes | SVM | Rede Neural MLP | Monte Carlo | Markov | Gradient Boosting | Rede Bayesiana | Entropia
+                        </div>
+                    </div>
+                </div>
+            `;
+            contador.style.display = 'none';
+
+            try {
+                const resposta = await fetch(`/api/ultra/${loteriaAtual}/${quantidade}`);
+                if (!resposta.ok) throw new Error('Erro na analise ultra');
+                
+                const dados = await resposta.json();
+                const ultra = dados.resultado_ultra;
+                
+                document.getElementById('totalGeradas').textContent = ultra.total_geradas.toLocaleString('pt-BR') + ' (Ultra IA)';
+                contador.style.display = 'block';
+                
+                // Renderizar combinacoes ultra
+                renderizarCombinacoesUltra(ultra.combinacoes, ultra.ensemble);
+            } catch (erro) {
+                console.error('Erro:', erro);
+                grade.innerHTML = `
+                    <div class="carregando" style="grid-column: 1/-1;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--acento-vermelho);"></i>
+                        <div class="texto-carregando">Erro na analise ultra. Tente novamente.</div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderizarCombinacoesUltra(combinacoes, ensemble) {
+            const grade = document.getElementById('gradeCombinacoes');
+            grade.innerHTML = '';
+            
+            // Mostrar resultado do ensemble
+            if (ensemble) {
+                const cartaoEnsemble = document.createElement('div');
+                cartaoEnsemble.className = 'cartao-combinacao';
+                cartaoEnsemble.style.gridColumn = '1 / -1';
+                cartaoEnsemble.style.background = 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)';
+                cartaoEnsemble.style.border = '1px solid rgba(168, 85, 247, 0.3)';
+                
+                const topNumeros = ensemble.probabilidades_finais ? 
+                    Object.entries(ensemble.probabilidades_finais)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10) : [];
+                
+                cartaoEnsemble.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <h3 style="color: var(--acento-roxo); margin-bottom: 8px;">
+                            <i class="fas fa-brain"></i> Resultado do Ensemble Ultra
+                        </h3>
+                        <p style="color: var(--texto-secundario); font-size: 0.9rem;">
+                            9 algoritmos combinados: ${ensemble.algoritmos_utilizados.join(' | ')}
+                        </p>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <strong>Top 10 Numeros Mais Provaveis:</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                            ${topNumeros.map(([num, prob]) => `
+                                <div style="background: var(--gradiente-1); padding: 8px 12px; border-radius: 8px; text-align: center;">
+                                    <div style="font-weight: 700;">${num.toString().padStart(2, '0')}</div>
+                                    <div style="font-size: 0.7rem; opacity: 0.8;">${prob.toFixed(2)}%</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--texto-secundario);">
+                        <strong>Pesos do Ensemble:</strong> 
+                        RF: ${(ensemble.pesos.rf * 100).toFixed(0)}% | 
+                        NB: ${(ensemble.pesos.nb * 100).toFixed(0)}% | 
+                        SVM: ${(ensemble.pesos.svm * 100).toFixed(0)}% | 
+                        NN: ${(ensemble.pesos.nn * 100).toFixed(0)}% | 
+                        MC: ${(ensemble.pesos.mc * 100).toFixed(0)}% | 
+                        MK: ${(ensemble.pesos.mk * 100).toFixed(0)}% | 
+                        GB: ${(ensemble.pesos.gb * 100).toFixed(0)}% | 
+                        RB: ${(ensemble.pesos.rb * 100).toFixed(0)}%
+                    </div>
+                `;
+                grade.appendChild(cartaoEnsemble);
+            }
+            
+            // Renderizar combinacoes
+            combinacoes.forEach((comb, indice) => {
+                const cartao = document.createElement('div');
+                cartao.className = 'cartao-combinacao';
+                cartao.style.animationDelay = `${Math.min(indice * 0.02, 1)}s`;
+                
+                const confianca = comb.confianca;
+                const classeConfianca = confianca >= 70 ? 'alta' : confianca >= 50 ? 'media' : 'baixa';
+                
+                cartao.innerHTML = `
+                    <div class="cabecalho-combinacao">
+                        <span class="numero-jogo">Jogo #${(indice + 1).toString().padStart(3, '0')}</span>
+                        <span class="etiqueta-estrategia ${comb.estrategia}">${comb.estrategia}</span>
+                    </div>
+                    <div class="numeros-combinacao">
+                        ${comb.numeros.map(n => `
+                            <div class="numero-bola">${n.toString().padStart(2, '0')}</div>
+                        `).join('')}
+                    </div>
+                    <div class="barra-confianca">
+                        <div class="preenchimento-confianca ${classeConfianca}" style="width: ${confianca}%"></div>
+                    </div>
+                    <div class="info-confianca">
+                        <span>Ensemble Ultra IA</span>
+                        <span>${confianca.toFixed(2)}% | P: ${comb.probabilidade_conjunta.toFixed(4)}%</span>
+                    </div>
+                `;
+                
+                grade.appendChild(cartao);
+            });
+        }
+
+        async function gerarAnaliseGlobal() {
+            const quantidade = parseInt(document.getElementById('selectQuantidade').value);
+            const grade = document.getElementById('gradeCombinacoes');
+            const contador = document.getElementById('contadorResultados');
+            
+            grade.innerHTML = `
+                <div class="carregando" style="grid-column: 1/-1;">
+                    <div class="girando"></div>
+                    <div class="texto-carregando">
+                        <div style="font-size: 1.2rem; margin-bottom: 10px;">Executando Analise Global Mundial...</div>
+                        <div style="font-size: 0.9rem; color: var(--texto-secundario);">
+                            🇪🇺 Analise de Ciclos (Europa) | 🇺🇸 Monte Carlo 50k iteracoes (Americas) | 🇨🇳 Padroes Numerologicos (Asia)
+                        </div>
+                    </div>
+                </div>
+            `;
+            contador.style.display = 'none';
+
+            try {
+                const resposta = await fetch(`/api/global/${loteriaAtual}/${quantidade}`);
+                if (!resposta.ok) throw new Error('Erro na analise global');
+                
+                const dados = await resposta.json();
+                const global = dados.resultado_global;
+                
+                document.getElementById('totalGeradas').textContent = global.total_geradas.toLocaleString('pt-BR') + ' (Global)';
+                contador.style.display = 'block';
+                
+                renderizarCombinacoesGlobais(global.combinacoes, global.ensemble);
+            } catch (erro) {
+                console.error('Erro:', erro);
+                grade.innerHTML = `
+                    <div class="carregando" style="grid-column: 1/-1;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--acento-vermelho);"></i>
+                        <div class="texto-carregando">Erro na analise global. Tente novamente.</div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderizarCombinacoesGlobais(combinacoes, ensemble) {
+            const grade = document.getElementById('gradeCombinacoes');
+            grade.innerHTML = '';
+            
+            if (ensemble) {
+                const cartaoInfo = document.createElement('div');
+                cartaoInfo.className = 'cartao-combinacao';
+                cartaoInfo.style.gridColumn = '1 / -1';
+                cartaoInfo.style.background = 'linear-gradient(135deg, rgba(17, 153, 142, 0.15) 0%, rgba(56, 239, 125, 0.15) 100%)';
+                cartaoInfo.style.border = '1px solid rgba(17, 153, 142, 0.3)';
+                
+                const topNumeros = ensemble.probabilidades_finais ? 
+                    Object.entries(ensemble.probabilidades_finais)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10) : [];
+                
+                cartaoInfo.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <h3 style="color: #11998e; margin-bottom: 8px;">
+                            <i class="fas fa-globe"></i> Analise Global Mundial
+                        </h3>
+                        <p style="color: var(--texto-secundario); font-size: 0.9rem;">
+                            Tecnicas de todas as escolas: ${ensemble.estrategias.join(' | ')}
+                        </p>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <strong>Top 10 Numeros Mais Provaveis:</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                            ${topNumeros.map(([num, prob]) => `
+                                <div style="background: linear-gradient(135deg, #11998e, #38ef7d); padding: 8px 12px; border-radius: 8px; text-align: center;">
+                                    <div style="font-weight: 700;">${num.toString().padStart(2, '0')}</div>
+                                    <div style="font-size: 0.7rem; opacity: 0.8;">${prob.toFixed(2)}%</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+                        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                            <strong style="color: #3498db;">🇪🇺 Europa</strong>
+                            <p style="font-size: 0.8rem; color: var(--texto-secundario); margin-top: 4px;">Analise de Ciclos Longos (100+ sorteios)</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                            <strong style="color: #e74c3c;">🇺🇸 Americas</strong>
+                            <p style="font-size: 0.8rem; color: var(--texto-secundario); margin-top: 4px;">Monte Carlo 50.000 simulacoes</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                            <strong style="color: #f39c12;">🇨🇳 Asia</strong>
+                            <p style="font-size: 0.8rem; color: var(--texto-secundario); margin-top: 4px;">Padroes Numerologicos e Fibonacci</p>
+                        </div>
+                    </div>
+                `;
+                grade.appendChild(cartaoInfo);
+            }
+            
+            combinacoes.forEach((comb, indice) => {
+                const cartao = document.createElement('div');
+                cartao.className = 'cartao-combinacao';
+                cartao.style.animationDelay = `${Math.min(indice * 0.02, 1)}s`;
+                
+                const confianca = comb.confianca;
+                const classeConfianca = confianca >= 70 ? 'alta' : confianca >= 50 ? 'media' : 'baixa';
+                
+                cartao.innerHTML = `
+                    <div class="cabecalho-combinacao">
+                        <span class="numero-jogo">Jogo #${(indice + 1).toString().padStart(3, '0')}</span>
+                        <span class="etiqueta-estrategia ${comb.estrategia}">${comb.estrategia}</span>
+                    </div>
+                    <div class="numeros-combinacao">
+                        ${comb.numeros.map(n => `
+                            <div class="numero-bola">${n.toString().padStart(2, '0')}</div>
+                        `).join('')}
+                    </div>
+                    <div class="barra-confianca">
+                        <div class="preenchimento-confianca ${classeConfianca}" style="width: ${confianca}%"></div>
+                    </div>
+                    <div class="info-confianca">
+                        <span>Analise Global</span>
+                        <span>${confianca.toFixed(2)}% | P: ${comb.probabilidade_conjunta.toFixed(4)}%</span>
+                    </div>
+                `;
+                
+                grade.appendChild(cartao);
+            });
+        }
+
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valor);
+        }
+    </script>
+</body>
+</html>
