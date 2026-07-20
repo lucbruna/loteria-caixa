@@ -1,0 +1,59 @@
+name: Build Release
+
+# Dispara em cada release publicado: rebuilda os executaveis e o instalador
+# e anexa os assets ao proprio release.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows (.exe + Installer)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller pytest
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Build dashboard executable
+        run: pyinstaller --onefile --name LoteriaFederal --version-file version_info.txt --icon "Distribuicao\icon.ico" --add-data "static;static" --hidden-import flask_cors --hidden-import numpy --hidden-import loterias_mundiais --hidden-import tecnologias_globais --hidden-import tecnologias_adicionais --hidden-import funcionalidades_avancadas run_server.py
+
+      - name: Build console (menu) executable
+        run: pyinstaller --onefile --console --name LoteriaFederal-Console --icon "Distribuicao\icon_menu.ico" --add-data "static;static" --hidden-import flask_cors --hidden-import numpy --hidden-import loterias_mundiais --hidden-import tecnologias_globais --hidden-import tecnologias_adicionais --hidden-import funcionalidades_avancadas main.py
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+          if (-not $iscc) { $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" }
+          & $iscc LoteriaFederal.iss
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist_installer/LoteriaFederal-Setup-1.0.0.exe
+            dist/LoteriaFederal.exe
+            dist/LoteriaFederal-Console.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
