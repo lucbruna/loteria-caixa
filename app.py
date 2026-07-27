@@ -1,22 +1,54 @@
 """
 Servidor Flask - API Backend Atualizado
 """
-from flask import Flask, jsonify, send_from_directory, request
-from flask_cors import CORS
 import os
-import json
 import threading
-import numpy as np
 from datetime import datetime
-from api_client import api_client
-from analyzer import AnalisadorLoteriasAvancado as AnalisadorLoterias
-from analyzer_ultra import AnalisadorUltraAvancado
-from analyzer_global import AnalisadorGlobal
-from config import LOTTERIES, BASE_DIR, RESULTS_DIR, FLASK_HOST, FLASK_PORT, FLASK_DEBUG
+
+import numpy as np
+from flask import Flask, jsonify, request, send_from_directory
 from flask.json.provider import DefaultJSONProvider
+from flask_cors import CORS
+
+from analyzer import AnalisadorLoteriasAvancado as AnalisadorLoterias
+from analyzer_global import AnalisadorGlobal
+from analyzer_ultra import AnalisadorUltraAvancado
+from api_client import api_client
+from config import (
+    BASE_DIR,
+    CACHE_TTL_DATA,
+    CACHE_TTL_ULTIMO,
+    FLASK_DEBUG,
+    FLASK_HOST,
+    FLASK_PORT,
+    HISTORICO_PADRAO,
+    LOTTERIES,
+)
+from prediction_storage import (
+    obter_estatisticas,
+    obter_predicoes,
+    salvar_predicoes,
+    verificar_todas_predicoes,
+)
 
 app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"))
 CORS(app)
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+        "font-src 'self' https://cdnjs.cloudflare.com; "
+        "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+        "img-src 'self' data:; "
+        "connect-src 'self' https://servicebus2.caixa.gov.br"
+    )
+    return response
 
 
 class NumpyJSONProvider(DefaultJSONProvider):
@@ -42,13 +74,13 @@ cache_lock = threading.Lock()
 analisador = AnalisadorLoterias()
 
 
-def obter_dados(lottery: str, count: int = 100):
+def obter_dados(lottery: str, count: int = HISTORICO_PADRAO):
     """Busca resultados + estatisticas com cache em memoria (TTL 10 min)"""
     key = (lottery, count)
     with cache_lock:
         if key in _dados_cache:
             cached = _dados_cache[key]
-            if (datetime.now() - cached["time"]).seconds < 600:
+            if (datetime.now() - cached["time"]).total_seconds() < CACHE_TTL_DATA:
                 return cached["resultados"], cached["stats"]
 
     try:
@@ -81,7 +113,7 @@ def cachear_resultado(chave, ttl: int, fn):
     with cache_lock:
         if chave in _result_cache:
             cached = _result_cache[chave]
-            if (datetime.now() - cached["time"]).seconds < ttl:
+            if (datetime.now() - cached["time"]).total_seconds() < ttl:
                 return cached["data"]
 
     data = fn()
@@ -95,9 +127,9 @@ def obter_ou_buscar(lottery: str):
     with cache_lock:
         if lottery in cache_memoria:
             cached = cache_memoria[lottery]
-            if (datetime.now() - cached["time"]).seconds < 300:
+            if (datetime.now() - cached["time"]).total_seconds() < CACHE_TTL_ULTIMO:
                 return cached["data"]
-    
+
     try:
         data = api_client.get_latest_result(lottery)
     except Exception:
@@ -144,11 +176,11 @@ def obter_todos_ultimos():
 def obter_ultimo(lottery):
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     data = obter_ou_buscar(lottery)
     if not data:
         return jsonify({"erro": "Erro ao buscar dados"}), 500
-    
+
     return jsonify(data)
 
 
@@ -156,7 +188,7 @@ def obter_ultimo(lottery):
 def obter_historico(lottery, count):
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     resultados = api_client.get_historical_results(lottery, min(count, 200))
     return jsonify(resultados)
 
@@ -165,7 +197,7 @@ def obter_historico(lottery, count):
 def obter_analise(lottery):
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     resultados, stats = obter_dados(lottery, 100)
 
@@ -173,6 +205,7 @@ def obter_analise(lottery):
         return jsonify({"erro": "Sem dados disponiveis"}), 404
 
     sugestoes = analisador.gerar_sugestao_ia(resultados, config, 10)
+    salvar_predicoes(lottery, "IA", sugestoes, config)
 
     return jsonify({
         "loteria": lottery,
@@ -187,7 +220,7 @@ def obter_analise(lottery):
 def sugerir_numeros(lottery, count):
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     resultados, _ = obter_dados(lottery, 100)
 
@@ -195,6 +228,7 @@ def sugerir_numeros(lottery, count):
         return jsonify({"erro": "Sem dados disponiveis"}), 404
 
     sugestoes = analisador.gerar_sugestao_ia(resultados, config, min(count, 100))
+    salvar_predicoes(lottery, "IA", sugestoes, config)
     return jsonify(sugestoes)
 
 
@@ -202,7 +236,7 @@ def sugerir_numeros(lottery, count):
 def gerar_combinacoes(lottery, quantidade):
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     maximo = min(quantidade, 20000)
 
@@ -222,25 +256,25 @@ def gerar_combinacoes(lottery, quantidade):
         if info.get("atual", 0) > info.get("media", 0) * 1.3:
             pool_atrasados.append(num)
     pool_atrasados = pool_atrasados[:10]
-    
+
     # Pool combinado com pesos
     pool_principal = list(set(pool_quentes + pool_em_alta + pool_atrasados))
-    
+
     minimo = config["min_num"]
     maximo_num = config["max_num"]
     qtd_escolher = config["pick_count"]
-    
+
     combinacoes = []
     vistas = set()
-    
+
     tentativas = 0
     while len(combinacoes) < maximo and tentativas < maximo * 3:
         tentativas += 1
-        
+
         # Misturar estrategias
-        estrategia = str(np.random.choice(["quente", "tendencia", "atrasado", "aleatorio", "misto"], 
+        estrategia = str(np.random.choice(["quente", "tendencia", "atrasado", "aleatorio", "misto"],
                                        p=[0.30, 0.25, 0.20, 0.10, 0.15]))
-        
+
         if estrategia == "quente" and pool_quentes:
             base = [int(x) for x in np.random.choice(pool_quentes, min(qtd_escolher, len(pool_quentes)), replace=False)]
         elif estrategia == "tendencia" and pool_em_alta:
@@ -251,30 +285,31 @@ def gerar_combinacoes(lottery, quantidade):
             base = [int(x) for x in np.random.choice(pool_principal, min(qtd_escolher, len(pool_principal)), replace=False)]
         else:
             base = []
-        
+
         while len(base) < qtd_escolher:
             num = int(np.random.randint(minimo, maximo_num + 1))
             if num not in base:
                 base.append(num)
-        
+
         base = sorted([int(x) for x in base[:qtd_escolher]])
         chave = tuple(base)
-        
+
         if chave not in vistas:
             vistas.add(chave)
             confianca = analisador._calcular_confianca(base, stats["frequencia"], stats["conjunta"]["pares"], stats.get("intervalos", {}))
             motivos = analisador._gerar_motivos(base, stats["frequencia"], stats.get("tendencias", {}), stats.get("intervalos", {}))
-            
+
             combinacoes.append({
                 "numeros": base,
                 "confianca": round(confianca, 1),
                 "estrategia": estrategia,
                 "motivos": motivos
             })
-    
+
     # Ordenar por confianca
     combinacoes.sort(key=lambda x: x["confianca"], reverse=True)
-    
+    salvar_predicoes(lottery, "Combinacoes", combinacoes[:maximo], config)
+
     return jsonify({
         "total_geradas": len(combinacoes),
         "configuracao": config,
@@ -286,7 +321,7 @@ def gerar_combinacoes(lottery, quantidade):
 def obter_estatisticas(lottery):
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     resultados, stats = obter_dados(lottery, 100)
 
@@ -308,7 +343,7 @@ def calculadora_apostas():
             "cor": config["color"],
             "combinacoes": {}
         }
-        
+
         # Calcular custos para diferentes quantidades
         for qtd in range(config["pick_count"], min(config["pick_count"] + 10, 16)):
             from math import comb
@@ -319,7 +354,7 @@ def calculadora_apostas():
                 "total_combinacoes": num_combinacoes,
                 "custo_total": round(custo_total, 2)
             }
-    
+
     return jsonify(calculos)
 
 
@@ -327,7 +362,7 @@ def calculadora_apostas():
 def obter_detalhes(lottery):
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     ultimo = obter_ou_buscar(lottery)
     resultados, stats = obter_dados(lottery, 100)
@@ -337,7 +372,8 @@ def obter_detalhes(lottery):
 
     # Top 10 sugestoes
     sugestoes = analisador.gerar_sugestao_ia(resultados, config, 10)
-    
+    salvar_predicoes(lottery, "IA", sugestoes, config)
+
     return jsonify({
         "loteria": lottery,
         "configuracao": config,
@@ -353,7 +389,7 @@ def analise_ultra(lottery, quantidade):
     """Analise ultra avancada com 9 algoritmos de Machine Learning"""
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     maximo = min(quantidade, 100)
 
@@ -368,11 +404,14 @@ def analise_ultra(lottery, quantidade):
     if resultado is None:
         return jsonify({"erro": "Sem dados disponiveis"}), 404
 
+    combos = resultado.get("combinacoes", [])
+    salvar_predicoes(lottery, "Ultra", combos, config)
+
     return jsonify({
         "loteria": lottery,
         "configuracao": config,
         "resultado_ultra": resultado,
-        "concursos_analisados": len(resultado.get("combinacoes", [])) if isinstance(resultado, dict) else 0
+        "concursos_analisados": len(combos) if isinstance(resultado, dict) else 0
     })
 
 
@@ -381,7 +420,7 @@ def analise_global(lottery, quantidade):
     """Analise global com tecnicas de todas as escolas mundiais"""
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     maximo = min(quantidade, 100)
 
@@ -396,19 +435,22 @@ def analise_global(lottery, quantidade):
     if resultado is None:
         return jsonify({"erro": "Sem dados disponiveis"}), 404
 
+    combos = resultado.get("combinacoes", [])
+    salvar_predicoes(lottery, "Global", combos, config)
+
     return jsonify({
         "loteria": lottery,
         "configuracao": config,
         "resultado_global": resultado,
-        "concursos_analisados": len(resultado.get("combinacoes", [])) if isinstance(resultado, dict) else 0
+        "concursos_analisados": len(combos) if isinstance(resultado, dict) else 0
     })
 
 
 @app.route("/api/loterias_mundiais")
 def obter_loterias_mundiais():
     """Retorna todas as loterias mundiais"""
-    from loterias_mundiais import LOTERIAS_MUNDIAIS, TECNICAS_ANALISE_MUNDIAL, ESTRATEGIAS_GLOBAIS
-    
+    from loterias_mundiais import ESTRATEGIAS_GLOBAIS, LOTERIAS_MUNDIAIS, TECNICAS_ANALISE_MUNDIAL
+
     return jsonify({
         "total_loterias": len(LOTERIAS_MUNDIAIS),
         "loterias": LOTERIAS_MUNDIAIS,
@@ -421,9 +463,9 @@ def obter_loterias_mundiais():
 def obter_tecnologias():
     """Retorna todas as tecnologias globais de analise"""
     from tecnologias_globais import TecnologiasGlobais
-    
+
     tech = TecnologiasGlobais()
-    
+
     return jsonify({
         "formulas": {
             "combinatoria": "C(n,k) = n! / (k! * (n-k)!)",
@@ -445,12 +487,12 @@ def obter_tecnologias():
 def calcular_odds(p, w, m):
     """Calcula odds para qualquer configuracao de loteria"""
     from tecnologias_globais import TecnologiasGlobais
-    
+
     tech = TecnologiasGlobais()
-    
+
     odds = tech.calcular_odds_jackpot(p, w)
     prob_acerto = tech.calcular_probabilidade_combinatoria(p, w, w, m)
-    
+
     return jsonify({
         "configuracao": {"p": p, "w": w, "m": m},
         "odds_jackpot": odds,
@@ -468,7 +510,7 @@ def obter_tecnologias_avancadas(lottery):
     """Retorna resultados de todas as tecnologias avancadas"""
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     resultados, _ = obter_dados(lottery, 100)
 
@@ -508,17 +550,17 @@ def backtest(lottery, janelas):
     """Backtest walk-forward da IA"""
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     resultados, _ = obter_dados(lottery, 200)
 
     if not resultados or len(resultados) < janelas + 10:
         return jsonify({"erro": "Dados insuficientes para backtest"}), 404
-    
+
     from funcionalidades_avancadas import FuncionalidadesAvancadas
     func = FuncionalidadesAvancadas()
     resultado = func.backtest_walk_forward(resultados, config, janelas)
-    
+
     return jsonify(resultado)
 
 
@@ -528,7 +570,7 @@ def kelly():
     custo = float(request.args.get('custo', 5))
     premio = float(request.args.get('premio', 5000000))
     probabilidade = float(request.args.get('probabilidade', 0.0000001))
-    
+
     from funcionalidades_avancadas import FuncionalidadesAvancadas
     func = FuncionalidadesAvancadas()
     resultado = func.kelly_criterion(custo, premio, probabilidade)
@@ -540,7 +582,7 @@ def wheeling(lottery, qtd_jogos):
     """Gera fechamento/wheeling otimizado"""
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     resultados, _ = obter_dados(lottery, 100)
 
@@ -553,13 +595,13 @@ def wheeling(lottery, qtd_jogos):
     for r in resultados:
         for d in r.get("listaDezenas", []):
             historico[int(d)] += 1
-    
+
     base = [n for n, _ in historico.most_common(config["pick_count"] + 4)]
-    
+
     from funcionalidades_avancadas import FuncionalidadesAvancadas
     func = FuncionalidadesAvancadas()
     resultado = func.wheeling_otimizado(base, qtd_jogos, config)
-    
+
     return jsonify(resultado)
 
 
@@ -568,7 +610,7 @@ def auto_tune(lottery):
     """Auto-tune de hiperparametros"""
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     resultados, _ = obter_dados(lottery, 50)  # Reduzido para velocidade
 
@@ -578,7 +620,7 @@ def auto_tune(lottery):
     from funcionalidades_avancadas import FuncionalidadesAvancadas
     func = FuncionalidadesAvancadas()
     resultado = func.auto_tune(resultados, config)
-    
+
     return jsonify(resultado)
 
 
@@ -587,7 +629,7 @@ def gerar_jogos_inteligentes(lottery, quantidade):
     """Gera jogos inteligentes com todas as tecnicas"""
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     resultados, _ = obter_dados(lottery, 100)
 
@@ -597,7 +639,8 @@ def gerar_jogos_inteligentes(lottery, quantidade):
     from funcionalidades_avancadas import FuncionalidadesAvancadas
     func = FuncionalidadesAvancadas()
     jogos = func.gerar_jogos_inteligentes(resultados, config, min(quantidade, 50))
-    
+    salvar_predicoes(lottery, "Inteligente", jogos, config)
+
     return jsonify({
         "loteria": lottery,
         "jogos_gerados": len(jogos),
@@ -611,16 +654,16 @@ def importar_csv():
     data = request.get_json()
     conteudo = data.get('conteudo', '')
     lottery = data.get('loteria', 'megasena')
-    
+
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
-    
+
     from funcionalidades_avancadas import FuncionalidadesAvancadas
     func = FuncionalidadesAvancadas()
     resultado = func.importar_csv(conteudo, config)
-    
+
     return jsonify(resultado)
 
 
@@ -629,7 +672,7 @@ def ensemble_completo(lottery):
     """Ensemble completo com todas as analises"""
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
-    
+
     config = LOTTERIES[lottery]
     resultados, _ = obter_dados(lottery, 50)  # Reduzido para velocidade
 
@@ -637,9 +680,8 @@ def ensemble_completo(lottery):
         return jsonify({"erro": "Sem dados disponiveis"}), 404
 
     def _calc():
-        from tecnologias_adicionais import TecnologiasAdicionais
-        from analyzer_ultra import AnalisadorUltraAvancado
         from analyzer_global import AnalisadorGlobal
+        from analyzer_ultra import AnalisadorUltraAvancado
         from funcionalidades_avancadas import FuncionalidadesAvancadas
 
         ultra = AnalisadorUltraAvancado()
@@ -689,7 +731,57 @@ def ensemble_completo(lottery):
     return jsonify(cachear_resultado(("ensemble", lottery), 600, _calc))
 
 
+# ==========================================
+# ENDPOINTS DE PREDICOES / RESULTADOS
+# ==========================================
+
+
+@app.route("/api/predicoes/<lottery>")
+def api_obter_predicoes(lottery):
+    if lottery not in LOTTERIES:
+        return jsonify({"erro": "Loteria nao encontrada"}), 404
+    return jsonify(obter_predicoes(lottery))
+
+
+@app.route("/api/predicoes/todas")
+def api_obter_todas_predicoes():
+    return jsonify(obter_predicoes())
+
+
+@app.route("/api/estatisticas-predicoes")
+def api_estatisticas_predicoes():
+    return jsonify(obter_estatisticas())
+
+
+@app.route("/api/estatisticas-predicoes/<lottery>")
+def api_estatisticas_predicoes_loteria(lottery):
+    if lottery not in LOTTERIES:
+        return jsonify({"erro": "Loteria nao encontrada"}), 404
+    return jsonify(obter_estatisticas(lottery))
+
+
+@app.route("/api/verificar-resultados", methods=["POST"])
+def api_verificar_resultados():
+    """Verifica todas as predicoes nao verificadas contra o ultimo sorteio"""
+    resultado = verificar_todas_predicoes(api_client)
+    return jsonify(resultado)
+
+
+@app.route("/api/resultados")
+def api_resultados():
+    """Pagina de resultados de predicoes"""
+    return send_from_directory(os.path.join(BASE_DIR, "static"), "resultados.html")
+
+
 if __name__ == "__main__":
+    # Verificar predicoes pendentes na inicializacao
+    try:
+        resultado = verificar_todas_predicoes(api_client)
+        if resultado["loterias_verificadas"] > 0:
+            print(f"✅ {resultado['loterias_verificadas']} loterias verificadas automaticamente")
+    except Exception:
+        pass
+
     print("🚀 Iniciando Loteria Federal API...")
     print(f"📊 Acesse: http://{FLASK_HOST}:{FLASK_PORT}")
     app.run(host=FLASK_HOST, port=FLASK_PORT, debug=FLASK_DEBUG)

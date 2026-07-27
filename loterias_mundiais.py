@@ -2,6 +2,7 @@
 Base de Dados Global de Loterias Mundiais
 Todas as principais loterias do mundo com configuracoes e tecnicas de analise
 """
+import math
 
 # ========================================
 # LOTERIAS MUNDIAIS - CONFIGURACOES
@@ -11,7 +12,7 @@ LOTERIAS_MUNDIAIS = {
     # ==========================================
     # AMERICAS
     # ==========================================
-    
+
     # EUA
     "powerball": {
         "nome": "Powerball",
@@ -55,7 +56,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 1.00,
         "descricao": "Lotto multi-estadual acessivel"
     },
-    
+
     # CANADA
     "lotto_max": {
         "nome": "Lotto Max",
@@ -83,7 +84,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 3.00,
         "descricao": "Classica loteria canadense"
     },
-    
+
     # MEXICO
     "melate": {
         "nome": "Melate",
@@ -99,7 +100,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 15.00,
         "descricao": "Principal loteria mexicana"
     },
-    
+
     # ARGENTINA
     "lotto_argentina": {
         "nome": "Loto",
@@ -114,7 +115,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 100.00,
         "descricao": "Loteria principal da Argentina"
     },
-    
+
     # COLOMBIA
     "baloto": {
         "nome": "Baloto",
@@ -130,11 +131,11 @@ LOTERIAS_MUNDIAIS = {
         "custo": 3500.00,
         "descricao": "Maior loteria da Colombia"
     },
-    
+
     # ==========================================
     # EUROPA
     # ==========================================
-    
+
     # EUROPEU
     "euromillions": {
         "nome": "EuroMillions",
@@ -164,7 +165,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 2.00,
         "descricao": "Alternativa ao EuroMillions com mais chances"
     },
-    
+
     # UK
     "uk_lotto": {
         "nome": "UK Lotto",
@@ -193,7 +194,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 1.00,
         "descricao": "Loteria de premios garantidos"
     },
-    
+
     # ESPANHA
     "el_gordo": {
         "nome": "El Gordo de la Primitiva",
@@ -236,7 +237,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 1.00,
         "descricao": "A mais antiga loteria da Espanha"
     },
-    
+
     # FRANCA
     "loto_franca": {
         "nome": "Loto",
@@ -252,7 +253,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 2.00,
         "descricao": "Loteria nacional francesa"
     },
-    
+
     # ALEMANHA
     "lotto_alemanha": {
         "nome": "Lotto 6 aus 49",
@@ -268,7 +269,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 1.20,
         "descricao": "Classica loteria alema"
     },
-    
+
     # ITALIA
     "superenalotto": {
         "nome": "SuperEnalotto",
@@ -284,7 +285,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 1.00,
         "descricao": "Maior loteria da Italia, jackpots enormes"
     },
-    
+
     # POLONIA
     "lotto_polonia": {
         "nome": "Lotto",
@@ -299,7 +300,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 3.00,
         "descricao": "Loteria nacional polonesa"
     },
-    
+
     # RUSSIA
     "gosloto_7_49": {
         "nome": "Gosloto 7/49",
@@ -314,11 +315,11 @@ LOTERIAS_MUNDIAIS = {
         "custo": 100.00,
         "descricao": "Loteria estatal russa"
     },
-    
+
     # ==========================================
     # ASIA
     # ==========================================
-    
+
     # CHINA
     "ssq_china": {
         "nome": "Shuang Se Qiu",
@@ -348,7 +349,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 2.00,
         "descricao": "Loteria de grande premio da China"
     },
-    
+
     # JAPAO
     "loto6_japao": {
         "nome": "Loto 6",
@@ -364,7 +365,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 200.00,
         "descricao": "Loteria popular japonesa"
     },
-    
+
     # COREIA DO SUL
     "lotto_coreia": {
         "nome": "Lotto 6/45",
@@ -379,7 +380,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 1000.00,
         "descricao": "Loteria nacional coreana"
     },
-    
+
     # FILIPINAS
     "lotto_filipinas": {
         "nome": "PCSO Lotto 6/42",
@@ -394,7 +395,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 20.00,
         "descricao": "Loteria das Filipinas"
     },
-    
+
     # INDIA
     "lotto_india": {
         "nome": "State Lotteries",
@@ -409,7 +410,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 50.00,
         "descricao": "Sistema de loterias estaduais da India"
     },
-    
+
     # SINGAPURA
     "toto_singapura": {
         "nome": "Toto",
@@ -425,11 +426,11 @@ LOTERIAS_MUNDIAIS = {
         "custo": 1.00,
         "descricao": "Loteria de Singapura"
     },
-    
+
     # ==========================================
     # OCEANIA
     # ==========================================
-    
+
     # AUSTRALIA
     "oz_lotto": {
         "nome": "Oz Lotto",
@@ -472,7 +473,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 0.65,
         "descricao": "Loteria classica australiana"
     },
-    
+
     # NOVA ZELANDIA
     "lotto_nz": {
         "nome": "Lotto NZ",
@@ -488,11 +489,11 @@ LOTERIAS_MUNDIAIS = {
         "custo": 0.70,
         "descricao": "Loteria nacional neozelandesa"
     },
-    
+
     # ==========================================
     # AFRICA
     # ==========================================
-    
+
     "lotto_sul_africa": {
         "nome": "LOTTO",
         "pais": "Africa do Sul",
@@ -517,11 +518,11 @@ LOTERIAS_MUNDIAIS = {
         "pick_count": 5,
         "bonus": {"min": 1, "max": 20, "count": 1},
         "cor": "#007749",
-        "frequencia": "2x王朝 (Ter, Qui)",
+        "frequencia": "2x semana (Ter, Qui)",
         "custo": 5.00,
         "descricao": "PowerBall sul-africano"
     },
-    
+
     # NIGERIA
     "lotto_nigeria": {
         "nome": "Premier Lotto",
@@ -536,7 +537,7 @@ LOTERIAS_MUNDIAIS = {
         "custo": 100.00,
         "descricao": "Loteria popular nigeriana"
     },
-    
+
     # KENIA
     "lotto_kenia": {
         "nome": "Kenya Lotto",
@@ -551,11 +552,11 @@ LOTERIAS_MUNDIAIS = {
         "custo": 50.00,
         "descricao": "Loteria kenyana"
     },
-    
+
     # ==========================================
     # LOTERIAS VIRTUAIS/ONLINE
     # ==========================================
-    
+
     "loterias_virtuais": {
         "nome": "Loterias Online",
         "pais": "Global",
@@ -789,16 +790,16 @@ def comparar_loterias(loteria1: str, loteria2: str):
     """Compara duas loterias"""
     l1 = LOTERIAS_MUNDIAIS.get(loteria1)
     l2 = LOTERIAS_MUNDIAIS.get(loteria2)
-    
+
     if not l1 or not l2:
         return None
-    
+
     return {
         "loteria1": l1,
         "loteria2": l2,
         "dificuldade": {
-            "loteria1": l1["max_num"] ** l1["pick_count"],
-            "loteria2": l2["max_num"] ** l2["pick_count"]
+            "loteria1": math.comb(l1["max_num"], l1["pick_count"]),
+            "loteria2": math.comb(l2["max_num"], l2["pick_count"])
         },
         "custo_por_jogo": {
             "loteria1": l1["custo"],

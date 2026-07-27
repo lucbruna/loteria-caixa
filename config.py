@@ -111,6 +111,24 @@ LOTTERIES = {
 
 # Cache timeout (em segundos)
 CACHE_TIMEOUT = 3600  # 1 hora
+CACHE_TTL_DATA = 600  # TTL para dados de analise (10 min)
+CACHE_TTL_ULTIMO = 300  # TTL para ultimo resultado (5 min)
+CACHE_TTL_ULTRA = 600  # TTL para analise ultra/global (10 min)
+
+# Padroes de analise
+AI_MAX_CONSECUTIVOS_PENALTY = 20
+AI_ALL_DATES_PENALTY = 10
+AI_ALL_PARITY_PENALTY = 15
+AI_MAX_CONFIANCA = 95
+AI_MIN_CONFIANCA = 10
+
+# Combinacoes
+MAX_COMBINACOES_POR_REQUEST = 20000
+MAX_TENTATIVAS_MULTIPLICADOR = 3
+HISTORICO_PADRAO = 100
+HISTORICO_ULTRA = 150
+HISTORICO_BACKTEST = 200
+HISTORICO_AUTO_TUNE = 50
 
 # Configurações da IA
 AI_CONFIG = {
@@ -129,23 +147,26 @@ FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "False").strip().lower() in ("1", "t
 # Reprodutibilidade das sugestoes (opcional).
 # Defina AI_SEED para obter sempre os mesmos jogos gerados.
 # Vazio (padrao) = aleatorio a cada execucao.
-_AI_SEED_RAW = os.environ.get("AI_SEED", "").strip()
-AI_SEED = int(_AI_SEED_RAW) if _AI_SEED_RAW else None
+_AI_SEED_RAW: str = os.environ.get("AI_SEED", "").strip()
+AI_SEED: int | None = int(_AI_SEED_RAW) if _AI_SEED_RAW else None
 
-if AI_SEED is not None:
-    import random
-    import numpy as np
-    random.seed(AI_SEED)
-    np.random.seed(AI_SEED)
+def aplicar_seed() -> None:
+    if AI_SEED is not None:
+        import random
+
+        import numpy as np
+        random.seed(AI_SEED)
+        np.random.seed(AI_SEED)
+
+aplicar_seed()
 
 
 # Garante saida UTF-8 mesmo em consoles Windows (cp1252), evitando que
 # prints com emojis quebrem a aplicacao (ex.: /api/ultra e o menu).
-import sys
-try:
+import contextlib
+
+with contextlib.suppress(Exception):
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     if hasattr(sys.stderr, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-except Exception:
-    pass

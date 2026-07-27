@@ -10,14 +10,12 @@ Os analyzers especializados (``AnalisadorLoteriasAvancado``,
 ``AnalisadorUltraAvancado``, ``AnalisadorGlobal``) herdam desta base para
 evitar duplicacao de logica e manter uma unica fonte de verdade.
 """
-import numpy as np
+import json
+import math
 from collections import Counter, defaultdict
 from itertools import combinations
-from datetime import datetime, timedelta
-import json
-import os
-import math
-from config import AI_CONFIG, RESULTS_DIR, LOTTERIES
+
+import numpy as np
 
 
 class AnalisadorBase:
@@ -239,8 +237,10 @@ class AnalisadorBase:
 
         return info_intervalos
 
-    def analisar_tendencias(self, resultados: list, config: dict, janelas: list = [5, 10, 20, 50]) -> dict:
+    def analisar_tendencias(self, resultados: list, config: dict, janelas: list | None = None) -> dict:
         """Analisa tendencias em multiplas janelas temporais"""
+        if janelas is None:
+            janelas = [5, 10, 20, 50]
         todas_tendencias = {}
 
         for janela in janelas:

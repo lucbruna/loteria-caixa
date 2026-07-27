@@ -1,12 +1,13 @@
 """
 Cliente da API da Caixa Econômica Federal
 """
-import requests
 import json
 import os
 import time
-from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import requests
+
 from config import API_BASE_URL, CACHE_DIR, CACHE_TIMEOUT
 
 
@@ -16,40 +17,40 @@ class CaixaAPIClient:
         self.session.headers.update({
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         })
-    
+
     def _get_cache_path(self, lottery: str, concurso: int = None) -> str:
         if concurso:
             return os.path.join(CACHE_DIR, f"{lottery}_{concurso}.json")
         return os.path.join(CACHE_DIR, f"{lottery}_latest.json")
-    
+
     def _is_cache_valid(self, cache_path: str) -> bool:
         if not os.path.exists(cache_path):
             return False
         mtime = os.path.getmtime(cache_path)
         return (time.time() - mtime) < CACHE_TIMEOUT
-    
-    def _load_cache(self, cache_path: str) -> dict:
+
+    def _load_cache(self, cache_path: str) -> dict | None:
         try:
-            with open(cache_path, "r", encoding="utf-8") as f:
+            with open(cache_path, encoding="utf-8") as f:
                 return json.load(f)
-        except:
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError, OSError):
             return None
-    
+
     def _save_cache(self, cache_path: str, data: dict):
         try:
             with open(cache_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-        except:
+        except (PermissionError, OSError):
             pass
-    
+
     def get_latest_result(self, lottery: str) -> dict:
         cache_path = self._get_cache_path(lottery)
-        
+
         if self._is_cache_valid(cache_path):
             cached = self._load_cache(cache_path)
             if cached:
                 return cached
-        
+
         url = f"{API_BASE_URL}/{lottery}"
         try:
             resp = self.session.get(url, timeout=30)
@@ -60,7 +61,7 @@ class CaixaAPIClient:
         except Exception as e:
             print(f"Erro ao buscar {lottery}: {e}")
             return self._load_cache(cache_path)
-    
+
     def get_concurso(self, lottery: str, concurso: int, max_tentativas: int = 4) -> dict:
         cache_path = self._get_cache_path(lottery, concurso)
 
@@ -88,7 +89,7 @@ class CaixaAPIClient:
                     time.sleep(1)
 
         return self._load_cache(cache_path)
-    
+
     def _fetch_concursos_paralelo(self, lottery: str, concursos: list, max_workers: int = 3) -> list:
         """Busca multiplos concursos em paralelo (respeitando o cache em disco).
 

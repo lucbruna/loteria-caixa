@@ -29,7 +29,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller pytest
+          pip install -r requirements-dev.txt
+          pip install pyinstaller
+
+      - name: Lint with ruff
+        run: ruff check . --output-format=github
 
       - name: Compute version from tag
         shell: pwsh
@@ -65,10 +69,10 @@ jobs:
         run: pytest -q
 
       - name: Build dashboard executable
-        run: pyinstaller --onefile --name LoteriaFederal --version-file version_info.txt --icon "Distribuicao\icon.ico" --add-data "static;static" --hidden-import flask_cors --hidden-import numpy --hidden-import loterias_mundiais --hidden-import tecnologias_globais --hidden-import tecnologias_adicionais --hidden-import funcionalidades_avancadas run_server.py
+        run:           pyinstaller --onefile --name LoteriaFederal --version-file version_info.txt --icon "Distribuicao\icon.ico" --add-data "static;static" --hidden-import flask_cors --hidden-import numpy --hidden-import loterias_mundiais --hidden-import tecnologias_globais --hidden-import tecnologias_adicionais --hidden-import funcionalidades_avancadas --hidden-import prediction_storage run_server.py
 
       - name: Build console (menu) executable
-        run: pyinstaller --onefile --console --name LoteriaFederal-Console --icon "Distribuicao\icon_menu.ico" --add-data "static;static" --hidden-import flask_cors --hidden-import numpy --hidden-import loterias_mundiais --hidden-import tecnologias_globais --hidden-import tecnologias_adicionais --hidden-import funcionalidades_avancadas main.py
+        run:           pyinstaller --onefile --console --name LoteriaFederal-Console --icon "Distribuicao\icon_menu.ico" --add-data "static;static" --hidden-import flask_cors --hidden-import numpy --hidden-import loterias_mundiais --hidden-import tecnologias_globais --hidden-import tecnologias_adicionais --hidden-import funcionalidades_avancadas --hidden-import prediction_storage main.py
 
       - name: Install Inno Setup
         run: choco install innosetup -y

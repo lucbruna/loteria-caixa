@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados - Loteria Federal IA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        .background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(0, 100, 255, 0.06) 0%, transparent 50%);
+            z-index: -1;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header {
+            display: flex; align-items: center; gap: 15px; margin-bottom: 30px;
+            padding: 20px; background: rgba(255,255,255,0.03);
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+        }
+        .header h1 { font-size: 1.4em; color: #00d4aa; flex: 1; }
+        .voltar {
+            background: rgba(255,255,255,0.08); color: #ccc; border: none;
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.9em;
+            transition: all 0.2s; text-decoration: none;
+        }
+        .voltar:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-verificar {
+            background: linear-gradient(135deg, #00d4aa, #0099cc);
+            color: #000; border: none; padding: 10px 20px; border-radius: 8px;
+            cursor: pointer; font-weight: 600; font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        .btn-verificar:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,212,170,0.3); }
+        .btn-verificar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 20px; text-align: center;
+        }
+        .stat-card .valor { font-size: 2em; font-weight: 700; color: #00d4aa; }
+        .stat-card .label { font-size: 0.85em; color: #888; margin-top: 5px; }
+        .stat-card .icone { font-size: 1.5em; margin-bottom: 8px; color: #00d4aa; }
+
+        .loteria-section { margin-bottom: 30px; }
+        .loteria-header {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+            padding: 12px 16px; background: rgba(255,255,255,0.03);
+            border-radius: 10px; border-left: 4px solid var(--cor, #00d4aa);
+            cursor: pointer; transition: background 0.2s;
+        }
+        .loteria-header:hover { background: rgba(255,255,255,0.06); }
+        .loteria-header .icon { font-size: 1.5em; }
+        .loteria-header .nome { font-weight: 600; flex: 1; }
+        .loteria-header .badge {
+            padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: 600;
+        }
+        .badge-ok { background: rgba(0,212,170,0.2); color: #00d4aa; }
+        .badge-pendente { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .badge-vazia { background: rgba(255,255,255,0.05); color: #666; }
+
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%; border-collapse: collapse; font-size: 0.85em;
+        }
+        th {
+            text-align: left; padding: 10px 12px; background: rgba(255,255,255,0.03);
+            color: #888; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08);
+            white-space: nowrap;
+        }
+        td {
+            padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        .numeros-cell { font-family: 'Courier New', monospace; font-size: 0.9em; }
+        .numeros-cell span {
+            display: inline-block; width: 24px; height: 24px; line-height: 24px;
+            text-align: center; border-radius: 50%; margin: 1px;
+            font-size: 0.75em;
+        }
+        .num-acertado { background: rgba(0,212,170,0.3); color: #00d4aa; font-weight: 700; }
+        .num-errado { background: rgba(255,255,255,0.05); color: #666; }
+        .acerto-alto { color: #00d4aa; font-weight: 700; }
+        .acerto-medio { color: #ffc107; }
+        .acerto-baixo { color: #ff6b6b; }
+        .fonte-badge {
+            padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 600;
+        }
+        .fonte-IA { background: rgba(0,212,170,0.2); color: #00d4aa; }
+        .fonte-Ultra { background: rgba(156,39,176,0.2); color: #ce93d8; }
+        .fonte-Global { background: rgba(33,150,243,0.2); color: #90caf9; }
+        .fonte-Combinacoes { background: rgba(255,152,0,0.2); color: #ffb74d; }
+        .fonte-Inteligente { background: rgba(233,30,99,0.2); color: #f48fb1; }
+
+        .vazio {
+            text-align: center; padding: 60px 20px; color: #666;
+        }
+        .vazio i { font-size: 3em; margin-bottom: 15px; color: #333; }
+        .loading {
+            text-align: center; padding: 40px; color: #888;
+        }
+        .loading i { font-size: 2em; animation: spin 1s linear infinite; color: #00d4aa; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            table { font-size: 0.75em; }
+            th, td { padding: 6px 8px; }
+            .numeros-cell span { width: 20px; height: 20px; line-height: 20px; font-size: 0.65em; }
+            .stat-card .valor { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Resultados das Predicoes</h1>
+            <button class="btn-verificar" onclick="verificarAgora()">
+                <i class="fas fa-sync-alt"></i> Verificar Agora
+            </button>
+            <a href="/" class="voltar"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        <div id="stats-gerais" class="stats-grid"></div>
+        <div id="conteudo"><div class="loading"><i class="fas fa-spinner"></i><br>Carregando...</div></div>
+    </div>
+
+    <script>
+    async function carregar() {
+        try {
+            const [preds, stats] = await Promise.all([
+                fetch('/api/predicoes/todas').then(r => r.json()),
+                fetch('/api/estatisticas-predicoes').then(r => r.json())
+            ]);
+            renderStats(stats);
+            renderTabelas(preds, stats);
+        } catch(e) {
+            document.getElementById('conteudo').innerHTML =
+                '<div class="vazio"><i class="fas fa-exclamation-triangle"></i><br>Erro ao carregar dados</div>';
+        }
+    }
+
+    function renderStats(stats) {
+        let total = 0, verificadas = 0, totalAcertos = 0, qtdAcertos = 0, maxAcertos = 0;
+        for (const s of Object.values(stats)) {
+            total += s.total || 0;
+            verificadas += s.verificadas || 0;
+            if (s.media_acertos > 0) { totalAcertos += s.media_acertos * s.verificadas; qtdAcertos += s.verificadas; }
+            if ((s.max_acertos || 0) > maxAcertos) maxAcertos = s.max_acertos;
+        }
+        const media = qtdAcertos ? (totalAcertos / qtdAcertos) : 0;
+        document.getElementById('stats-gerais').innerHTML = `
+            <div class="stat-card"><div class="icone"><i class="fas fa-ticket-alt"></i></div>
+                <div class="valor">${total}</div><div class="label">Total de Palpites</div></div>
+            <div class="stat-card"><div class="icone"><i class="fas fa-check-circle"></i></div>
+                <div class="valor">${verificadas}</div><div class="label">Verificados</div></div>
+            <div class="stat-card"><div class="icone"><i class="fas fa-hourglass-half"></i></div>
+                <div class="valor">${total - verificadas}</div><div class="label">Pendentes</div></div>
+            <div class="stat-card"><div class="icone"><i class="fas fa-star"></i></div>
+                <div class="valor">${media.toFixed(2)}</div><div class="label">Media de Acertos</div></div>
+            <div class="stat-card"><div class="icone"><i class="fas fa-trophy"></i></div>
+                <div class="valor">${maxAcertos}</div><div class="label">Max Acertos</div></div>
+        `;
+    }
+
+    function renderTabelas(preds, stats) {
+        const container = document.getElementById('conteudo');
+        const loterias = Object.keys(preds).length ? Object.keys(preds) : [];
+        if (!loterias.length) {
+            container.innerHTML = '<div class="vazio"><i class="fas fa-inbox"></i><br>Nenhuma predicao salva ainda.<br>Gere palpites na analise para aparecerem aqui.</div>';
+            return;
+        }
+        let html = '';
+        const colors = { megasena: '#00A859', lotofacil: '#9B59B6', lotomania: '#E74C3C', quina: '#3498DB', loteca: '#F39C12', timemania: '#1ABC9C', diadesorte: '#E67E22' };
+        for (const chave of loterias) {
+            const lista = preds[chave]?.predicoes || [];
+            const s = stats[chave] || {};
+            const cor = colors[chave] || '#00d4aa';
+            const nomes = { megasena: 'Mega-Sena', lotofacil: 'Lotofácil', lotomania: 'Lotomania', quina: 'Quina', loteca: 'Loteca', timemania: 'Timemania', diadesorte: 'Dia de Sorte' };
+            const icons = { megasena: '🎰', lotofacil: '🎯', lotomania: '🍀', quina: '⭐', loteca: '⚽', timemania: '🎮', diadesorte: '📅' };
+            const pendentes = (s.total || 0) - (s.verificadas || 0);
+            const badge = s.verificadas > 0 ? '<span class="badge badge-ok">' + s.verificadas + ' verificados</span>' : '<span class="badge badge-vazia">0 verificados</span>';
+            const badgePend = pendentes > 0 ? '<span class="badge badge-pendente">' + pendentes + ' pendentes</span>' : '';
+            const sorted = [...lista].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            html += `<div class="loteria-section"><div class="loteria-header" style="--cor:${cor}" onclick="toggleTable('t-${chave}')">
+                <span class="icon">${icons[chave] || '🎲'}</span>
+                <span class="nome">${nomes[chave] || chave}</span>
+                ${badge} ${badgePend}
+                <span style="color:#666;font-size:0.8em">${sorted.length} palpites</span>
+            </div>`;
+            html += `<div id="t-${chave}" class="table-wrap">`;
+            if (!sorted.length) {
+                html += '<div class="vazio" style="padding:30px"><i class="fas fa-inbox"></i><br>Nenhum palpite</div>';
+            } else {
+                html += `<table><thead><tr>
+                    <th>Data</th><th>Fonte</th><th>Numeros</th><th>Conf.</th><th>Acertos</th><th>Acertados</th><th>Concurso</th>
+                </tr></thead><tbody>`;
+                for (const p of sorted) {
+                    const data = new Date(p.data).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+                    const fonte = p.fonte || '?';
+                    const fonteCls = 'fonte-' + fonte.replace(/\s+/g, '');
+                    const nums = p.numeros || [];
+                    const conf = p.confianca || 0;
+                    const acertos = p.acertos;
+                    const acertados = p.numeros_acertados || [];
+                    const verif = p.verificado;
+                    const concurso = p.concurso_verificado || '-';
+
+                    let numsHtml = nums.map(n => {
+                        const acertou = verif && acertados.includes(n);
+                        return `<span class="${acertou ? 'num-acertado' : 'num-errado'}">${String(n).padStart(2,'0')}</span>`;
+                    }).join('');
+
+                    let acertosHtml = verif
+                        ? `<span class="${acertos >= 4 ? 'acerto-alto' : acertos >= 2 ? 'acerto-medio' : 'acerto-baixo'}">${acertos}</span>`
+                        : '<span style="color:#666">—</span>';
+
+                    let acertadosHtml = verif && acertados.length
+                        ? acertados.map(n => `<span class="num-acertado">${String(n).padStart(2,'0')}</span>`).join('')
+                        : verif ? '<span style="color:#666">—</span>' : '<span style="color:#666">pendente</span>';
+
+                    html += `<tr>
+                        <td style="white-space:nowrap;font-size:0.8em;color:#888">${data}</td>
+                        <td><span class="fonte-badge ${fonteCls}">${fonte}</span></td>
+                        <td class="numeros-cell">${numsHtml}</td>
+                        <td>${typeof conf === 'number' ? conf.toFixed(1) : conf}</td>
+                        <td>${acertosHtml}</td>
+                        <td class="numeros-cell">${acertadosHtml}</td>
+                        <td style="color:#666;font-size:0.8em">${concurso}</td>
+                    </tr>`;
+                }
+                html += '</tbody></table>';
+            }
+            html += '</div></div>';
+        }
+        container.innerHTML = html;
+    }
+
+    function toggleTable(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function verificarAgora() {
+        const btn = document.querySelector('.btn-verificar');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+        try {
+            const resp = await fetch('/api/verificar-resultados', { method: 'POST' });
+            const r = await resp.json();
+            alert(`✅ Verificacao concluida!\n${r.loterias_verificadas} loterias processadas.`);
+            carregar();
+        } catch(e) {
+            alert('Erro ao verificar: ' + e.message);
+        }
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verificar Agora';
+    }
+
+    document.addEventListener('DOMContentLoaded', carregar);
+    </script>
+</body>
+</html>

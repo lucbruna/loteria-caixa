@@ -4,8 +4,6 @@ Baseado em formulas matematicas, algoritmos e estudos mundiais
 """
 
 import math
-from collections import Counter
-import numpy as np
 
 
 class TecnologiasGlobais:
@@ -13,11 +11,11 @@ class TecnologiasGlobais:
     Implementa as principais tecnologias e formulas matematicas
     usadas mundialmente para analise de loterias
     """
-    
+
     # ==========================================
     # FORMULAS MATEMATICAS GLOBAIS
     # ==========================================
-    
+
     @staticmethod
     def calcular_probabilidade_combinatoria(p: int, w: int, t: int, m: int) -> float:
         """
@@ -31,25 +29,25 @@ class TecnologiasGlobais:
         """
         if m > t or m > w:
             return 0.0
-        
+
         numerador = math.comb(t, m) * math.comb(p - t, w - m)
         denominador = math.comb(p, w)
-        
+
         return numerador / denominador
-    
+
     @staticmethod
     def calcular_odds_jackpot(p: int, w: int) -> dict:
         """Calcula odds do jackpot"""
         total_combinacoes = math.comb(p, w)
         probabilidade = 1 / total_combinacoes
-        
+
         return {
             "total_combinacoes": total_combinacoes,
             "probabilidade": probabilidade,
             "odds": f"1 em {total_combinacoes:,}",
             "odds_percentual": round(probabilidade * 100, 8)
         }
-    
+
     @staticmethod
     def calcular_combinacoes_cobertura(p: int, w: int, m_minima: int) -> dict:
         """
@@ -57,13 +55,13 @@ class TecnologiasGlobais:
         """
         # Formula simplificada para cobertura
         total = math.comb(p, w)
-        
+
         # Para garantir 1 acerto, precisa de todas as combinacoes
         bilhetes_para_1_acerto = total
-        
+
         # Para cobertura parcial (aproximacao)
         cobertura_parcial = math.ceil(total * 0.01)  # 1% das combinacoes
-        
+
         return {
             "total_combinacoes_possiveis": total,
             "bilhetes_para_garantir_jackpot": total,
@@ -71,11 +69,11 @@ class TecnologiasGlobais:
             "cobertura_1_por_cento": cobertura_parcial,
             "custo_estimado_1_percento": cobertura_parcial  # Multiplicar pelo custo por bilhete
         }
-    
+
     # ==========================================
     # ALGORITMOS DE SELECAO AVANCADOS
     # ==========================================
-    
+
     @staticmethod
     def algoritmo_wheeling(p: int, w: int, cobertura: int) -> dict:
         """
@@ -84,11 +82,11 @@ class TecnologiasGlobais:
         """
         # Wheeling simplificado
         numeros = list(range(1, p + 1))
-        
+
         # Dividir em grupos
         tamanho_grupo = math.ceil(len(numeros) / cobertura)
         grupos = [numeros[i:i+tamanho_grupo] for i in range(0, len(numeros), tamanho_grupo)]
-        
+
         # Gerar combinacoes dos grupos
         combinacoes = []
         for i, g1 in enumerate(grupos):
@@ -97,7 +95,7 @@ class TecnologiasGlobais:
                 numeros_grupo = sorted(g1[:w//2] + g2[:w//2])
                 if len(numeros_grupo) == w:
                     combinacoes.append(numeros_grupo)
-        
+
         return {
             "metodo": "Wheeling System",
             "cobertura": cobertura,
@@ -105,7 +103,7 @@ class TecnologiasGlobais:
             "combinacoes_geradas": len(combinacoes),
             "amostra": combinacoes[:5] if combinacoes else []
         }
-    
+
     @staticmethod
     def algoritmo_balanceamento(numeros: list, config: dict) -> dict:
         """
@@ -115,27 +113,27 @@ class TecnologiasGlobais:
         minimo = config["min_num"]
         maximo = config["max_num"]
         faixa = maximo - minimo + 1
-        
+
         # Dividir em faixas
         terco = faixa / 3
         baixos = [n for n in numeros if n < minimo + terco]
         medios = [n for n in numeros if minimo + terco <= n < minimo + 2*terco]
         altos = [n for n in numeros if n >= minimo + 2*terco]
-        
+
         # Paridade
         pares = [n for n in numeros if n % 2 == 0]
         impares = [n for n in numeros if n % 2 != 0]
-        
+
         # Soma
         soma = sum(numeros)
         media_soma = (minimo + maximo) / 2 * len(numeros)
-        
+
         # Analise de consecutivos
         consecutivos = 0
         for i in range(1, len(numeros)):
             if numeros[i] == numeros[i-1] + 1:
                 consecutivos += 1
-        
+
         return {
             "distribuicao_faixas": {
                 "baixos": len(baixos),
@@ -158,11 +156,11 @@ class TecnologiasGlobais:
                 "ideal": consecutivos <= 2
             }
         }
-    
+
     # ==========================================
     # ESTRATEGIAS COMPROVADAS POR ESTUDOS
     # ==========================================
-    
+
     @staticmethod
     def estrategia_syndicate_profissional() -> dict:
         """
@@ -182,7 +180,7 @@ class TecnologiasGlobais:
             ],
             "exemplo_sucesso": "Euromillions Syndicate (2019) - EUR 190M"
         }
-    
+
     @staticmethod
     def estrategia_delta_system() -> dict:
         """
@@ -204,7 +202,7 @@ class TecnologiasGlobais:
                 "numeros_gerados": [3, 8, 10, 18, 22, 23]
             }
         }
-    
+
     @staticmethod
     def estrategia_ottosen() -> dict:
         """
@@ -222,7 +220,7 @@ class TecnologiasGlobais:
             ],
             "formula_poisson": "P(k) = (lambda^k * e^-lambda) / k!"
         }
-    
+
     @staticmethod
     def estrategia_gail_howard() -> dict:
         """
@@ -240,7 +238,7 @@ class TecnologiasGlobais:
             ],
             "sucesso": "Venceu jackpot de $27.8M (1993)"
         }
-    
+
     @staticmethod
     def estrategia_lottery_expert() -> dict:
         """
@@ -257,37 +255,37 @@ class TecnologiasGlobais:
             ],
             "dica_expert": "Nunca aposte em numeros que ja sairam recentemente"
         }
-    
+
     # ==========================================
     # CALCULADORAS AVANCADAS
     # ==========================================
-    
+
     @staticmethod
     def calcular_custo_aneis(p: int, w: int, custo_por_jogo: float) -> dict:
         """
         Calcula custo para diferentes estrategias de aneis
         """
         total = math.comb(p, w)
-        
+
         aneis = {}
         for anel in range(1, 7):
             # Aproximacao: cada anel cobre X% das combinacoes
             cobertura = min(anel * 10, 100)
             jogos_necessarios = math.ceil(total * cobertura / 100)
             custo_total = jogos_necessarios * custo_por_jogo
-            
+
             aneis[f"anel_{anel}"] = {
                 "cobertura": f"{cobertura}%",
                 "jogos_necessarios": jogos_necessarios,
                 "custo_total": round(custo_total, 2)
             }
-        
+
         return {
             "total_combinacoes": total,
             "custo_por_jogo": custo_por_jogo,
             "aneis": aneis
         }
-    
+
     @staticmethod
     def calcular_roi_esperado(custo_total: float, premio_estimado: float, probabilidade: float) -> dict:
         """
@@ -295,7 +293,7 @@ class TecnologiasGlobais:
         """
         valor_esperado = premio_estimado * probabilidade
         roi = ((valor_esperado - custo_total) / custo_total) * 100 if custo_total > 0 else 0
-        
+
         return {
             "custo_total": round(custo_total, 2),
             "premio_estimado": round(premio_estimado, 2),
@@ -305,11 +303,11 @@ class TecnologiasGlobais:
             "lucro_esperado": round(valor_esperado - custo_total, 2),
             "aviso": "Loterias tem EV negativo - aposte com responsabilidade"
         }
-    
+
     # ==========================================
     # ESTATISTICAS POR LOTERIA MUNDIAL
     # ==========================================
-    
+
     ESTATISTICAS_LOTERIAS = {
         "powerball_eua": {
             "p": 69, "w": 5, "bonus_p": 26, "bonus_w": 1,

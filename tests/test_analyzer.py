@@ -2,16 +2,16 @@
 Testes do nucleo de analise (offline, sem acesso a API da Caixa).
 Execute com:  pytest
 """
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from config import LOTTERIES
-from base_analyzer import AnalisadorBase
 from analyzer import AnalisadorLoteriasAvancado
-from analyzer_ultra import AnalisadorUltraAvancado
 from analyzer_global import AnalisadorGlobal
+from analyzer_ultra import AnalisadorUltraAvancado
+from base_analyzer import AnalisadorBase
+from config import LOTTERIES
 
 
 def _fake_resultados(n=120, faixa=60, pick=6, seed=1):
@@ -82,10 +82,12 @@ def test_subclasses_herdam_base():
 
 def test_reprodutibilidade_com_seed(monkeypatch):
     import random
+
     import numpy as np
     monkeypatch.setenv("AI_SEED", "42")
     # recarrega config para aplicar o seed
     import importlib
+
     import config
     importlib.reload(config)
     random.seed(42)

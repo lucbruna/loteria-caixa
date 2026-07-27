@@ -21,3 +21,11 @@ venv/
 .venv/
 env/
 .env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store

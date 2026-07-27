@@ -3,13 +3,15 @@ Testes de regressao para funcionalidades_avancadas.
 Garante que o uso do nucleo base (base_analyzer) preserva o comportamento
 original da frequencia inline. Offline (sem rede).
 """
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import numpy as np
 from collections import Counter
+
+import numpy as np
+
 from config import LOTTERIES
 from funcionalidades_avancadas import FuncionalidadesAvancadas as FA
 
