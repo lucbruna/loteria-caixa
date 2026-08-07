@@ -1004,7 +1004,7 @@
                     cartao.className = 'cartao-estatistica fade-in';
                     
                     const numsQuentes = dados.frequencia.mais_frequentes.slice(0, 8);
-                    const contagemMax = Math.max(...numsQuentes.map(([, v]) => v.vezes), 1);
+                    const contagemMax = Math.max(...numsQuentes.map(([, v]) => v.absoluta), 1);
                     
                     cartao.innerHTML = `
                         <div class="titulo-estatistica">
@@ -1015,9 +1015,9 @@
                             <div class="barra-frequencia">
                                 <span class="numero-freq">${num.toString().padStart(2, '0')}</span>
                                 <div class="container-barra-freq">
-                                    <div class="preenchimento-barra-freq" style="width: ${(info.vezes / contagemMax) * 100}%; background: ${config.cor};"></div>
+                                    <div class="preenchimento-barra-freq" style="width: ${(info.absoluta / contagemMax) * 100}%; background: ${config.cor};"></div>
                                 </div>
-                                <span class="contagem-freq">${info.vezes}x</span>
+                                <span class="contagem-freq">${info.absoluta}x</span>
                             </div>
                         `).join('')}
                     `;

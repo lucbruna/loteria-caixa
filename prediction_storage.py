@@ -1,12 +1,12 @@
 import json
 import os
+import threading
 import uuid
 from datetime import datetime
-from typing import Any
 from config import DATA_DIR
 
 PREDICOES_FILE = os.path.join(DATA_DIR, "predicoes.json")
-STATS_FILE = os.path.join(DATA_DIR, "stats_predicoes.json")
+_predicoes_lock = threading.Lock()
 
 
 def _load() -> dict:
@@ -25,6 +25,21 @@ def _save(data: dict):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
+def obter_dados_predicoes() -> dict:
+    with _predicoes_lock:
+        return _load()
+
+
+def salvar_dados_predicoes(data: dict):
+    with _predicoes_lock:
+        _save(data)
+
+
+def _ultimo_concurso(api_client, lottery: str) -> int | None:
+    ultimo = api_client.get_latest_result(lottery)
+    return ultimo.get("numero") if ultimo else None
+
+
 def salvar_predicoes(
     lottery: str, source: str, combinacoes: list[dict], config: dict
 ) -> list[str]:
@@ -32,6 +47,8 @@ def salvar_predicoes(
     if lottery not in data:
         data[lottery] = {"predicoes": [], "stats": {}}
     ids = []
+    from api_client import api_client
+    concurso_atual = _ultimo_concurso(api_client, lottery)
     for comb in combinacoes:
         pid = str(uuid.uuid4())[:8]
         ids.append(pid)
@@ -42,11 +59,8 @@ def salvar_predicoes(
             "numeros": comb.get("numeros", comb.get("combinacao", [])),
             "confianca": comb.get("confianca", comb.get("score", 0)),
             "estrategia": comb.get("estrategia", ""),
-            "concurso_verificado": None,
-            "acertos": None,
-            "numeros_acertados": [],
-            "verificado": False,
-            "atualizado_em": None,
+            "concurso_criacao": concurso_atual,
+            "verificacoes": [],
         })
     _save(data)
     return ids
@@ -66,27 +80,31 @@ def obter_estatisticas(lottery: str | None = None) -> dict:
     for chave in loterias:
         preds = data.get(chave, {}).get("predicoes", [])
         total = len(preds)
-        verificadas = [p for p in preds if p.get("verificado")]
+        total_verificacoes = sum(len(p.get("verificacoes", [])) for p in preds)
+        preds_com_verif = [p for p in preds if p.get("verificacoes")]
         if not total:
-            stats[chave] = {"total": 0, "verificadas": 0, "media_acertos": 0, "por_verificar": 0}
+            stats[chave] = {"total": 0, "verificadas": 0, "total_verificacoes": 0, "media_acertos": 0, "por_verificar": total}
             continue
-        acertos_list = [p["acertos"] for p in verificadas if p["acertos"] is not None]
-        media = sum(acertos_list) / len(acertos_list) if acertos_list else 0
+        todos_acertos = []
         dist = {}
-        for p in verificadas:
-            a = p.get("acertos", 0)
-            dist[str(a)] = dist.get(str(a), 0) + 1
+        concurso_max = 0
+        for p in preds_com_verif:
+            for v in p["verificacoes"]:
+                a = v.get("acertos", 0)
+                todos_acertos.append(a)
+                dist[str(a)] = dist.get(str(a), 0) + 1
+                if v.get("concurso", 0) > concurso_max:
+                    concurso_max = v["concurso"]
+        media = sum(todos_acertos) / len(todos_acertos) if todos_acertos else 0
         stats[chave] = {
             "total": total,
-            "verificadas": len(verificadas),
-            "por_verificar": total - len(verificadas),
+            "verificadas": len(preds_com_verif),
+            "total_verificacoes": total_verificacoes,
+            "por_verificar": total - len(preds_com_verif),
             "media_acertos": round(media, 2),
-            "max_acertos": max(acertos_list) if acertos_list else 0,
+            "max_acertos": max(todos_acertos) if todos_acertos else 0,
             "distribuicao": dist,
-            "ultima_verificacao": max(
-                (p["atualizado_em"] for p in verificadas if p.get("atualizado_em")),
-                default=None,
-            ),
+            "ultimo_concurso_verificado": concurso_max or None,
         }
     return stats
 
@@ -95,32 +113,73 @@ def verificar_todas_predicoes(api_client) -> dict:
     from config import LOTTERIES
     data = _load()
     resultados_verificacao = {}
+
     for lottery_key in list(data.keys()):
         if lottery_key not in LOTTERIES:
             continue
-        config = LOTTERIES[lottery_key]
         preds = data[lottery_key].get("predicoes", [])
-        nao_verificadas = [p for p in preds if not p.get("verificado")]
-        if not nao_verificadas:
+        if not preds:
             continue
+
+        # Descobrir qual o maior concurso ja verificado para esta loteria
+        max_concurso_verif = 0
+        for p in preds:
+            for v in p.get("verificacoes", []):
+                if v.get("concurso", 0) > max_concurso_verif:
+                    max_concurso_verif = v["concurso"]
+
         ultimo = api_client.get_latest_result(lottery_key)
         if not ultimo:
             continue
-        concurso_num = ultimo.get("numero")
-        dezenas = set(int(d) for d in ultimo.get("listaDezenas", []))
-        for p in nao_verificadas:
+        ultimo_num = ultimo.get("numero", 0)
+
+        # Se o ultimo sorteio ja foi verificado, nao ha nada novo
+        if ultimo_num <= max_concurso_verif:
+            continue
+
+        # Buscar TODOS os concursos novos desde o ultimo verificado
+        novos_concursos = list(range(max_concurso_verif + 1, ultimo_num + 1))
+        if not novos_concursos:
+            continue
+
+        concursos_dados = api_client._fetch_concursos_paralelo(lottery_key, novos_concursos)
+        concursos_map = {}
+        for c in concursos_dados:
+            n = c.get("numero")
+            if n:
+                concursos_map[n] = set(int(d) for d in c.get("listaDezenas", []))
+
+        total_verificadas = 0
+        for p in preds:
             nums_set = set(p.get("numeros", []))
-            acertos = len(nums_set & dezenas)
-            p["acertos"] = acertos
-            p["numeros_acertados"] = sorted(nums_set & dezenas)
-            p["concurso_verificado"] = concurso_num
-            p["verificado"] = True
-            p["atualizado_em"] = datetime.now().isoformat()
-        resultados_verificacao[lottery_key] = {
-            "concurso": concurso_num,
-            "dezenas_sorteadas": sorted(dezenas),
-            "total_verificadas": len(nao_verificadas),
-        }
+            concursos_criacao = p.get("concurso_criacao") or 0
+            for num_concurso in novos_concursos:
+                if num_concurso <= concursos_criacao:
+                    continue
+                dezenas = concursos_map.get(num_concurso)
+                if dezenas is None:
+                    continue
+                acertos = len(nums_set & dezenas)
+                ja_existe = any(v.get("concurso") == num_concurso for v in p.get("verificacoes", []))
+                if not ja_existe:
+                    numeros_errados = sorted(nums_set - dezenas)
+                    p.setdefault("verificacoes", []).append({
+                        "concurso": num_concurso,
+                        "acertos": acertos,
+                        "numeros_sorteados": sorted(dezenas),
+                        "numeros_acertados": sorted(nums_set & dezenas),
+                        "numeros_errados": numeros_errados,
+                        "data_verificacao": datetime.now().isoformat(),
+                    })
+                    total_verificadas += 1
+
+        if total_verificadas > 0:
+            resultados_verificacao[lottery_key] = {
+                "ultimo_concurso": ultimo_num,
+                "novos_concursos": len(novos_concursos),
+                "total_verificacoes": total_verificadas,
+            }
+
     _save(data)
     return {
         "status": "ok",

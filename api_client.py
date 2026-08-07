@@ -8,7 +8,22 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 
-from config import API_BASE_URL, CACHE_DIR, CACHE_TIMEOUT
+from config import API_BASE_URL, CACHE_DIR, CACHE_TIMEOUT, MIRROR_BASE_URL
+
+
+def _adaptar_schema_mirror(data: dict) -> dict | None:
+    """Converte o schema do mirror (guto-alves/loterias-api) para o schema
+    da API da Caixa usado pelo app: concurso->numero, dezenas->listaDezenas,
+    data->dataApuracao. Mantem os campos extras do mirror intactos."""
+    if not isinstance(data, dict) or data.get("concurso") is None:
+        return None
+    return {
+        "numero": data.get("concurso"),
+        "dataApuracao": data.get("data", ""),
+        "listaDezenas": data.get("dezenas", []),
+        "dezenasSorteadasOrdemSorteio": data.get("dezenasOrdemSorteio", []),
+        **{k: v for k, v in data.items() if k not in ("concurso", "data", "dezenas", "dezenasOrdemSorteio")},
+    }
 
 
 class CaixaAPIClient:
@@ -43,6 +58,25 @@ class CaixaAPIClient:
         except (PermissionError, OSError):
             pass
 
+    def _fetch_mirror(self, lottery: str, concurso: int = None) -> dict | None:
+        """Busca um resultado no mirror publico (guto-alves/loterias-api).
+
+        Usado como fallback quando a API oficial da Caixa esta bloqueada.
+        Retorna o dado ja adaptado para o schema da Caixa, ou None.
+        """
+        url = f"{MIRROR_BASE_URL}/{lottery}"
+        if concurso:
+            url += f"/{concurso}"
+        else:
+            url += "/latest"
+        try:
+            resp = self.session.get(url, timeout=30)
+            resp.raise_for_status()
+            return _adaptar_schema_mirror(resp.json())
+        except Exception as e:
+            print(f"Erro ao buscar {lottery} {concurso or 'latest'} via mirror: {e}")
+            return None
+
     def get_latest_result(self, lottery: str) -> dict:
         cache_path = self._get_cache_path(lottery)
 
@@ -52,15 +86,21 @@ class CaixaAPIClient:
                 return cached
 
         url = f"{API_BASE_URL}/{lottery}"
+        data = None
         try:
             resp = self.session.get(url, timeout=30)
             resp.raise_for_status()
             data = resp.json()
+        except Exception as e:
+            print(f"Erro ao buscar {lottery} na API oficial: {e}")
+
+        if data is None:
+            data = self._fetch_mirror(lottery)
+
+        if data:
             self._save_cache(cache_path, data)
             return data
-        except Exception as e:
-            print(f"Erro ao buscar {lottery}: {e}")
-            return self._load_cache(cache_path)
+        return self._load_cache(cache_path)
 
     def get_concurso(self, lottery: str, concurso: int, max_tentativas: int = 4) -> dict:
         cache_path = self._get_cache_path(lottery, concurso)
@@ -71,6 +111,7 @@ class CaixaAPIClient:
                 return cached
 
         url = f"{API_BASE_URL}/{lottery}/{concurso}"
+        data = None
         for tentativa in range(1, max_tentativas + 1):
             try:
                 resp = self.session.get(url, timeout=30)
@@ -80,14 +121,19 @@ class CaixaAPIClient:
                     continue
                 resp.raise_for_status()
                 data = resp.json()
-                self._save_cache(cache_path, data)
-                return data
+                break
             except Exception as e:
                 if tentativa == max_tentativas:
                     print(f"Erro ao buscar {lottery} concurso {concurso}: {e}")
                 else:
                     time.sleep(1)
 
+        if data is None:
+            data = self._fetch_mirror(lottery, concurso)
+
+        if data:
+            self._save_cache(cache_path, data)
+            return data
         return self._load_cache(cache_path)
 
     def _fetch_concursos_paralelo(self, lottery: str, concursos: list, max_workers: int = 3) -> list:

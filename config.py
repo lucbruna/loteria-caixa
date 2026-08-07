@@ -28,6 +28,10 @@ for d in [DATA_DIR, CACHE_DIR, RESULTS_DIR]:
 # API Caixa Econômica Federal
 API_BASE_URL = "https://servicebus2.caixa.gov.br/portaldeloterias/api"
 
+# Mirror publico (guto-alves/loterias-api) usado como fallback quando a API
+# oficial da Caixa esta bloqueada/indisponivel (ex.: HTTP 403).
+MIRROR_BASE_URL = "https://loteriascaixa-api.herokuapp.com/api"
+
 # Configurações das Loterias
 LOTTERIES = {
     "megasena": {
@@ -148,7 +152,10 @@ FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "False").strip().lower() in ("1", "t
 # Defina AI_SEED para obter sempre os mesmos jogos gerados.
 # Vazio (padrao) = aleatorio a cada execucao.
 _AI_SEED_RAW: str = os.environ.get("AI_SEED", "").strip()
-AI_SEED: int | None = int(_AI_SEED_RAW) if _AI_SEED_RAW else None
+try:
+    AI_SEED: int | None = int(_AI_SEED_RAW) if _AI_SEED_RAW else None
+except ValueError:
+    AI_SEED = None
 
 def aplicar_seed() -> None:
     if AI_SEED is not None:

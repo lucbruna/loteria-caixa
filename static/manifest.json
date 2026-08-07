@@ -2,7 +2,7 @@
   "name": "Loteria Federal - Analise IA",
   "short_name": "Loteria IA",
   "description": "Sistema de analise de loterias com IA avancada",
-  "start_url": "/static/mobile.html",
+  "start_url": "/mobile",
   "display": "standalone",
   "background_color": "#0a0a1a",
   "theme_color": "#00d4aa",

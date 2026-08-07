@@ -724,14 +724,9 @@
             }
 
             try {
-                const draws = {};
-                for (const [key, config] of Object.entries(LOTTERIES)) {
-                    const resp = await fetch(`https://servicebus2.caixa.gov.br/portaldeloterias/api/${key}`);
-                    if (resp.ok) {
-                        draws[key] = await resp.json();
-                    }
-                }
-                
+                const resp = await fetch('/api/todos-ultimos');
+                if (!resp.ok) throw new Error('API indisponivel');
+                const draws = await resp.json();
                 localStorage.setItem('cachedDraws', JSON.stringify(draws));
                 renderDraws(draws);
             } catch (error) {
@@ -758,7 +753,7 @@
                     </div>
                     <div class="lottery-numbers">
                         ${(data.listaDezenas || []).slice(0, 6).map(n => `<div class="number-ball">${n}</div>`).join('')}
-                        ${(data.listaDezenas || []).length > 6 ? '<div class="number-ball">+${data.listaDezenas.length - 6}</div>' : ''}
+                        ${(data.listaDezenas || []).length > 6 ? `<div class="number-ball">+${data.listaDezenas.length - 6}</div>` : ''}
                     </div>
                 `;
                 container.appendChild(div);

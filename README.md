@@ -85,6 +85,37 @@ LOTERIA FEDERAL/
 | `GET /api/tecnologias` | Fórmulas e estratégias comprovadas |
 | `GET /api/calcular_odds/<p>/<w>/<m>` | Odds para qualquer configuração |
 | `POST /api/importar_csv` | Importa histórico de CSV (`{conteudo, loteria}`) |
+| `GET /` | Página inicial (dashboard) |
+| `GET /mobile` | Versão mobile do dashboard |
+| `GET /detalhes/<lottery>` | Página de detalhes por loteria |
+| `GET /api/worldclass/<lottery>/<quantidade>` | Análise World-Class (Regressão Logística, ARIMA, Gradient Boosting, Distribuição) |
+| `GET /api/predicoes/todas` | Todas as predições salvas |
+| `GET /api/predicoes/<lottery>` | Predições de uma loteria |
+| `GET /api/estatisticas-predicoes` | Estatísticas gerais de predições |
+| `GET /api/estatisticas-predicoes/<lottery>` | Estatísticas de predições por loteria |
+| `POST /api/verificar-resultados` | Verifica predições contra resultados reais |
+| `GET /api/resultados-simulacao/<lottery>` | Resultados das simulações por loteria |
+| `GET /api/resultados-simulacao` | Resultados de todas as simulações |
+| `POST /api/simular` | Cria nova simulação de jogos (IA/Ultra/Global/Combinacoes) |
+| `GET /api/simulacoes` | Lista simulações (filtros `loteria`, `metodo`, `status`) |
+| `GET /api/evolucao-acertos` | Evolução de acertos por tipo de simulação |
+| `GET /api/distribuicao-acertos` | Distribuição de acertos por tipo |
+| `GET /api/performance-tipos` | Performance comparativa por tipo |
+| `GET /api/comparar-simulacoes/<id_a>/<id_b>` | Compara duas simulações lado a lado |
+| `GET /api/exportar-simulacoes` | Exporta simulações (CSV/JSON, escopos todas/verificadas/pendentes) |
+| `GET /simulacao` | Página de simulações |
+| `GET /backtest` | Página de backtest |
+| `GET /api/resultados` | Página de resultados |
+| `GET /api/tecnologia/<lottery>/<tech>` | Executa tecnologia específica (lstm, qlearning, fuzzy, chaos, wavelet, kmeans, pca, bayesian, stacking, fractal) |
+| `GET /api/monte-carlo/<lottery>` | Simulação Monte Carlo (aleatório × frequência × IA) |
+| `GET /api/bias-detector/<lottery>` | Detector de viés (chi², KS, entropia, quentes/frios) |
+| `GET /analise-avancada` | Página de análise avançada (ML) |
+| `GET /api/ml-complete/<lottery>` | Pipeline ML completo (5 modelos) |
+| `GET /api/ml/regression/<lottery>` | Regressão Logística regularizada |
+| `GET /api/ml/arima/<lottery>` | ARIMA (statsmodels) |
+| `GET /api/ml/poisson/<lottery>` | Distribuição Poisson + Geométrica |
+| `GET /api/ml/gradient/<lottery>` | XGBoost |
+| `GET /api/ml/lightgbm/<lottery>` | LightGBM |
 
 > **Configuração (variáveis de ambiente):** `FLASK_HOST` (padrão `127.0.0.1`),
 > `FLASK_PORT` (padrão `5000`) e `FLASK_DEBUG` (padrão `False`).

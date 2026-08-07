@@ -766,7 +766,7 @@
             const cartaoQuentes = document.createElement('div');
             cartaoQuentes.className = 'cartao-estatistica';
             const maisFrequentes = estatisticas.frequencia.mais_frequentes.slice(0, 10);
-            const contagemMax = Math.max(...maisFrequentes.map(([, v]) => v.vezes), 1);
+            const contagemMax = Math.max(...maisFrequentes.map(([, v]) => v.absoluta), 1);
             
             cartaoQuentes.innerHTML = `
                 <div class="titulo-estatistica">
@@ -776,9 +776,9 @@
                     <div class="barra-frequencia">
                         <span class="numero-freq">${num.toString().padStart(2, '0')}</span>
                         <div class="container-barra">
-                            <div class="preenchimento-barra" style="width: ${(info.vezes / contagemMax) * 100}%; background: ${config.cor};"></div>
+                            <div class="preenchimento-barra" style="width: ${(info.absoluta / contagemMax) * 100}%; background: ${config.cor};"></div>
                         </div>
-                        <span class="contagem-freq">${info.vezes}x</span>
+                        <span class="contagem-freq">${info.absoluta}x</span>
                     </div>
                 `).join('')}
             `;
@@ -788,7 +788,7 @@
             const cartaoFrios = document.createElement('div');
             cartaoFrios.className = 'cartao-estatistica';
             const menosFrequentes = estatisticas.frequencia.menos_frequentes.slice(0, 10);
-            const contagemMin = Math.max(...menosFrequentes.map(([, v]) => v.vezes), 0);
+            const contagemMin = Math.max(...menosFrequentes.map(([, v]) => v.absoluta), 0);
             
             cartaoFrios.innerHTML = `
                 <div class="titulo-estatistica">
@@ -798,23 +798,23 @@
                     <div class="barra-frequencia">
                         <span class="numero-freq">${num.toString().padStart(2, '0')}</span>
                         <div class="container-barra">
-                            <div class="preenchimento-barra" style="width: ${contagemMin > 0 ? (info.vezes / contagemMin) * 100 : 0}%; background: #3b82f6;"></div>
+                            <div class="preenchimento-barra" style="width: ${contagemMin > 0 ? (info.absoluta / contagemMin) * 100 : 0}%; background: #3b82f6;"></div>
                         </div>
-                        <span class="contagem-freq">${info.vezes}x</span>
+                        <span class="contagem-freq">${info.absoluta}x</span>
                     </div>
                 `).join('')}
             `;
             grade.appendChild(cartaoFrios);
 
             // Pares Frequentes
-            if (estatisticas.pares && estatisticas.pares.pares_top) {
+            if (estatisticas.conjunta && estatisticas.conjunta.pares && estatisticas.conjunta.pares.top_20) {
                 const cartaoPares = document.createElement('div');
                 cartaoPares.className = 'cartao-estatistica';
                 cartaoPares.innerHTML = `
                     <div class="titulo-estatistica">
                         <i class="fas fa-link"></i> Pares Mais Frequentes
                     </div>
-                    ${estatisticas.pares.pares_top.slice(0, 10).map(([par, contagem]) => `
+                    ${estatisticas.conjunta.pares.top_20.slice(0, 10).map(([par, contagem]) => `
                         <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--borda);">
                             <span>${par[0].toString().padStart(2, '0')} - ${par[1].toString().padStart(2, '0')}</span>
                             <span style="color: var(--acento-verde);">${contagem}x</span>
@@ -828,8 +828,9 @@
             if (estatisticas.tendencias) {
                 const cartaoTendencias = document.createElement('div');
                 cartaoTendencias.className = 'cartao-estatistica';
-                const emAlta = estatisticas.tendencias.em_alta || [];
-                const emBaixa = estatisticas.tendencias.em_baixa || [];
+                const janela5 = estatisticas.tendencias.janela_5 || {};
+                const emAlta = (janela5.em_alta || []).map(item => item.numero);
+                const emBaixa = (janela5.em_baixa || []).map(item => item.numero);
                 
                 cartaoTendencias.innerHTML = `
                     <div class="titulo-estatistica">

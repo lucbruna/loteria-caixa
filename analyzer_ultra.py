@@ -862,16 +862,29 @@ class AnalisadorUltraAvancado(AnalisadorBase):
         print("Executando Rede Bayesiana...")
         rb = self.rede_bayesiana(resultados, config)
 
+        # World-Class: Regressao Logistica + ARIMA + GB sklearn + Distribuicao
+        wc = {}
+        try:
+            from analise_worldclass import AnaliseWorldClass
+            minimo_tmp = config["min_num"]
+            maximo_tmp = config["max_num"]
+            analise_wc = AnaliseWorldClass(minimo_tmp, maximo_tmp, config["pick_count"])
+            wc = analise_wc.ensemble_world_class(resultados, janela=10)
+            print("  World-Class ensemble concluido")
+        except Exception as e:
+            print(f"  World-Class falhou: {e}")
+
         # Combinar probabilidades com pesos
         pesos = {
-            "rf": 0.15,
-            "nb": 0.12,
-            "svm": 0.10,
-            "nn": 0.18,
-            "mc": 0.15,
-            "mk": 0.10,
-            "gb": 0.12,
-            "rb": 0.08
+            "rf": 0.12,
+            "nb": 0.10,
+            "svm": 0.08,
+            "nn": 0.14,
+            "mc": 0.12,
+            "mk": 0.08,
+            "gb": 0.10,
+            "rb": 0.06,
+            "wc": 0.20,
         }
 
         minimo = config["min_num"]
@@ -914,6 +927,10 @@ class AnalisadorUltraAvancado(AnalisadorBase):
             if "probabilidades" in rb:
                 soma_ponderada += rb["probabilidades"].get(num, 0) * pesos["rb"]
 
+            # World-Class Ensemble
+            if "probabilidades_finais" in wc:
+                soma_ponderada += wc["probabilidades_finais"].get(str(num), wc["probabilidades_finais"].get(num, 0)) * pesos["wc"]
+
             probabilidades_finais[num] = round(soma_ponderada, 4)
 
         # Normalizar
@@ -922,9 +939,10 @@ class AnalisadorUltraAvancado(AnalisadorBase):
             probabilidades_finais = {k: round(v/soma_total * 100, 4) for k, v in probabilidades_finais.items()}
 
         return {
-            "algoritmo": "Ensemble Ultra (9 Algoritmos)",
+            "algoritmo": "Ensemble Ultra (10 Algoritmos)",
             "algoritmos_utilizados": ["Random Forest", "Naive Bayes", "SVM", "Rede Neural MLP",
-                                       "Monte Carlo", "Cadeia de Markov", "Gradient Boosting", "Rede Bayesiana"],
+                                       "Monte Carlo", "Cadeia de Markov", "Gradient Boosting", "Rede Bayesiana",
+                                       "World-Class (RL+ARIMA+GB+Dist)"],
             "pesos": pesos,
             "probabilidades_finais": probabilidades_finais,
             "top_numeros": sorted(probabilidades_finais.items(), key=lambda x: x[1], reverse=True)[:20],
@@ -1022,7 +1040,8 @@ class AnalisadorUltraAvancado(AnalisadorBase):
         print("=" * 50)
         print("✅ Analise Ultra Concluida!")
         print(f"📊 {len(combinacoes)} combinacoes geradas")
-        print(f"🎯 Maior confianca: {combinacoes[0]['confianca']:.2f}%")
+        if combinacoes:
+            print(f"🎯 Maior confianca: {combinacoes[0]['confianca']:.2f}%")
 
         return {
             "ensemble": ensemble,

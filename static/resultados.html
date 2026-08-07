@@ -24,8 +24,9 @@
             display: flex; align-items: center; gap: 15px; margin-bottom: 30px;
             padding: 20px; background: rgba(255,255,255,0.03);
             border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+            flex-wrap: wrap;
         }
-        .header h1 { font-size: 1.4em; color: #00d4aa; flex: 1; }
+        .header h1 { font-size: 1.4em; color: #00d4aa; flex: 1; min-width: 200px; }
         .voltar {
             background: rgba(255,255,255,0.08); color: #ccc; border: none;
             padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.9em;
@@ -41,14 +42,14 @@
         .btn-verificar:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,212,170,0.3); }
         .btn-verificar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 25px; }
         .stat-card {
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px; padding: 20px; text-align: center;
+            border-radius: 12px; padding: 16px; text-align: center;
         }
-        .stat-card .valor { font-size: 2em; font-weight: 700; color: #00d4aa; }
-        .stat-card .label { font-size: 0.85em; color: #888; margin-top: 5px; }
-        .stat-card .icone { font-size: 1.5em; margin-bottom: 8px; color: #00d4aa; }
+        .stat-card .valor { font-size: 1.8em; font-weight: 700; color: #00d4aa; }
+        .stat-card .label { font-size: 0.8em; color: #888; margin-top: 4px; }
+        .stat-card .icone { font-size: 1.3em; margin-bottom: 6px; color: #00d4aa; }
 
         .loteria-section { margin-bottom: 30px; }
         .loteria-header {
@@ -67,30 +68,42 @@
         .badge-pendente { background: rgba(255,193,7,0.2); color: #ffc107; }
         .badge-vazia { background: rgba(255,255,255,0.05); color: #666; }
 
-        .table-wrap { overflow-x: auto; }
-        table {
-            width: 100%; border-collapse: collapse; font-size: 0.85em;
+        .concurso-group { margin-bottom: 20px; }
+        .concurso-title {
+            padding: 10px 14px; background: rgba(255,255,255,0.04);
+            border-radius: 8px; font-weight: 600; font-size: 0.9em;
+            border-left: 3px solid #00d4aa; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
         }
-        th {
-            text-align: left; padding: 10px 12px; background: rgba(255,255,255,0.03);
-            color: #888; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08);
-            white-space: nowrap;
+        .concurso-title .sorteio {
+            font-family: 'Courier New', monospace;
+            display: flex; gap: 3px; align-items: center;
         }
-        td {
-            padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+        .concurso-title .sorteio span {
+            display: inline-block; width: 26px; height: 26px; line-height: 26px;
+            text-align: center; border-radius: 50%; font-size: 0.75em;
+            background: rgba(255,193,7,0.25); color: #ffc107; font-weight: 700;
         }
-        tr:hover td { background: rgba(255,255,255,0.02); }
-        .numeros-cell { font-family: 'Courier New', monospace; font-size: 0.9em; }
-        .numeros-cell span {
-            display: inline-block; width: 24px; height: 24px; line-height: 24px;
-            text-align: center; border-radius: 50%; margin: 1px;
-            font-size: 0.75em;
+
+        .jogo-card {
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px; padding: 14px; margin-bottom: 10px;
+            transition: background 0.2s;
         }
-        .num-acertado { background: rgba(0,212,170,0.3); color: #00d4aa; font-weight: 700; }
-        .num-errado { background: rgba(255,255,255,0.05); color: #666; }
-        .acerto-alto { color: #00d4aa; font-weight: 700; }
-        .acerto-medio { color: #ffc107; }
-        .acerto-baixo { color: #ff6b6b; }
+        .jogo-card:hover { background: rgba(255,255,255,0.04); }
+        .jogo-header {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
+        }
+        .jogo-id {
+            font-family: 'Courier New', monospace; font-size: 0.75em;
+            color: #888; background: rgba(255,255,255,0.05);
+            padding: 2px 8px; border-radius: 4px;
+        }
+        .jogo-data { font-size: 0.75em; color: #666; }
+        .jogo-conf {
+            font-size: 0.75em; padding: 2px 8px; border-radius: 4px;
+            background: rgba(0,212,170,0.15); color: #00d4aa;
+        }
         .fonte-badge {
             padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 600;
         }
@@ -99,6 +112,49 @@
         .fonte-Global { background: rgba(33,150,243,0.2); color: #90caf9; }
         .fonte-Combinacoes { background: rgba(255,152,0,0.2); color: #ffb74d; }
         .fonte-Inteligente { background: rgba(233,30,99,0.2); color: #f48fb1; }
+
+        .numeros-row { margin-bottom: 8px; }
+        .numeros-label { font-size: 0.7em; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .numeros-list {
+            font-family: 'Courier New', monospace; display: flex; gap: 3px; flex-wrap: wrap;
+        }
+        .numeros-list span {
+            display: inline-block; min-width: 28px; height: 28px; line-height: 28px;
+            text-align: center; border-radius: 50%; font-size: 0.8em; font-weight: 600;
+        }
+        .num-acerto { background: rgba(0,212,170,0.3); color: #00d4aa; border: 1px solid rgba(0,212,170,0.5); }
+        .num-erro { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); }
+        .num-drawn { background: rgba(255,193,7,0.25); color: #ffc107; border: 1px solid rgba(255,193,7,0.4); }
+        .num-nao-drawn { background: rgba(255,255,255,0.03); color: #555; border: 1px solid rgba(255,255,255,0.05); }
+
+        .resultado-acertos {
+            display: flex; align-items: center; gap: 8px; margin-top: 6px;
+        }
+        .acerto-count {
+            font-size: 1.2em; font-weight: 700;
+            padding: 4px 12px; border-radius: 8px;
+        }
+        .acerto-15, .acerto-11, .acerto-12, .acerto-13, .acerto-14 {
+            background: rgba(0,212,170,0.25); color: #00d4aa;
+        }
+        .acerto-10, .acerto-9, .acerto-8 {
+            background: rgba(0,212,170,0.15); color: #00d4aa;
+        }
+        .acerto-7, .acerto-6 {
+            background: rgba(255,193,7,0.2); color: #ffc107;
+        }
+        .acerto-5, .acerto-4, .acerto-3 {
+            background: rgba(255,152,0,0.15); color: #ffb74d;
+        }
+        .acerto-2, .acerto-1, .acerto-0 {
+            background: rgba(255,107,107,0.15); color: #ff6b6b;
+        }
+        .acerto-label { font-size: 0.8em; color: #888; }
+
+        .pendente-label {
+            font-size: 0.85em; color: #ffc107; padding: 4px 10px;
+            background: rgba(255,193,7,0.1); border-radius: 6px;
+        }
 
         .vazio {
             text-align: center; padding: 60px 20px; color: #666;
@@ -110,12 +166,23 @@
         .loading i { font-size: 2em; animation: spin 1s linear infinite; color: #00d4aa; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        .legenda {
+            display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;
+            padding: 10px 14px; background: rgba(255,255,255,0.03);
+            border-radius: 8px; font-size: 0.8em;
+        }
+        .legenda-item { display: flex; align-items: center; gap: 6px; }
+        .legenda-dot {
+            width: 12px; height: 12px; border-radius: 50%;
+        }
+
         @media (max-width: 768px) {
             .container { padding: 10px; }
-            table { font-size: 0.75em; }
-            th, td { padding: 6px 8px; }
-            .numeros-cell span { width: 20px; height: 20px; line-height: 20px; font-size: 0.65em; }
-            .stat-card .valor { font-size: 1.5em; }
+            .header { padding: 12px; gap: 8px; }
+            .header h1 { font-size: 1.1em; }
+            .stat-card .valor { font-size: 1.4em; }
+            .numeros-list span { min-width: 24px; height: 24px; line-height: 24px; font-size: 0.7em; }
+            .concurso-title .sorteio span { width: 22px; height: 22px; line-height: 22px; font-size: 0.65em; }
         }
     </style>
 </head>
@@ -130,22 +197,32 @@
             <a href="/" class="voltar"><i class="fas fa-arrow-left"></i> Voltar</a>
         </div>
 
+        <div class="legenda">
+            <div class="legenda-item"><div class="legenda-dot" style="background:rgba(0,212,170,0.5)"></div> Acertou</div>
+            <div class="legenda-item"><div class="legenda-dot" style="background:rgba(255,107,107,0.5)"></div> Errou</div>
+            <div class="legenda-item"><div class="legenda-dot" style="background:rgba(255,193,7,0.4)"></div> Numero Sorteado</div>
+        </div>
+
         <div id="stats-gerais" class="stats-grid"></div>
         <div id="conteudo"><div class="loading"><i class="fas fa-spinner"></i><br>Carregando...</div></div>
     </div>
 
     <script>
+    const NOMES = { megasena:'Mega-Sena', lotofacil:'Lotofácil', lotomania:'Lotomania', quina:'Quina', loteca:'Loteca', timemania:'Timemania', diadesorte:'Dia de Sorte' };
+    const ICONS = { megasena:'🎰', lotofacil:'🎯', lotomania:'🍀', quina:'⭐', loteca:'⚽', timemania:'🎮', diadesorte:'📅' };
+    const COLORS = { megasena:'#00A859', lotofacil:'#9B59B6', lotomania:'#E74C3C', quina:'#3498DB', loteca:'#F39C12', timemania:'#1ABC9C', diadesorte:'#E67E22' };
+
     async function carregar() {
         try {
             const [preds, stats] = await Promise.all([
                 fetch('/api/predicoes/todas').then(r => r.json()),
-                fetch('/api/estatisticas-predicoes').then(r => r.json())
+                fetch('/api/estatisticas-predicoes').then(r => r.json()),
             ]);
             renderStats(stats);
-            renderTabelas(preds, stats);
+            renderLoterias(preds, stats);
         } catch(e) {
             document.getElementById('conteudo').innerHTML =
-                '<div class="vazio"><i class="fas fa-exclamation-triangle"></i><br>Erro ao carregar dados</div>';
+                '<div class="vazio"><i class="fas fa-exclamation-triangle"></i><br>Erro ao carregar dados: ' + e.message + '</div>';
         }
     }
 
@@ -160,112 +237,207 @@
         const media = qtdAcertos ? (totalAcertos / qtdAcertos) : 0;
         document.getElementById('stats-gerais').innerHTML = `
             <div class="stat-card"><div class="icone"><i class="fas fa-ticket-alt"></i></div>
-                <div class="valor">${total}</div><div class="label">Total de Palpites</div></div>
+                <div class="valor">${total}</div><div class="label">Total de Jogos</div></div>
             <div class="stat-card"><div class="icone"><i class="fas fa-check-circle"></i></div>
                 <div class="valor">${verificadas}</div><div class="label">Verificados</div></div>
             <div class="stat-card"><div class="icone"><i class="fas fa-hourglass-half"></i></div>
                 <div class="valor">${total - verificadas}</div><div class="label">Pendentes</div></div>
             <div class="stat-card"><div class="icone"><i class="fas fa-star"></i></div>
-                <div class="valor">${media.toFixed(2)}</div><div class="label">Media de Acertos</div></div>
+                <div class="valor">${media.toFixed(1)}</div><div class="label">Media Acertos</div></div>
             <div class="stat-card"><div class="icone"><i class="fas fa-trophy"></i></div>
                 <div class="valor">${maxAcertos}</div><div class="label">Max Acertos</div></div>
         `;
     }
 
-    function renderTabelas(preds, stats) {
+    function renderLoterias(preds, stats) {
         const container = document.getElementById('conteudo');
-        const loterias = Object.keys(preds).length ? Object.keys(preds) : [];
+        const loterias = Object.keys(preds);
         if (!loterias.length) {
-            container.innerHTML = '<div class="vazio"><i class="fas fa-inbox"></i><br>Nenhuma predicao salva ainda.<br>Gere palpites na analise para aparecerem aqui.</div>';
+            container.innerHTML = '<div class="vazio"><i class="fas fa-inbox"></i><br>Nenhum jogo salvo ainda.<br>Gere jogos na analise para aparecerem aqui.</div>';
             return;
         }
+
         let html = '';
-        const colors = { megasena: '#00A859', lotofacil: '#9B59B6', lotomania: '#E74C3C', quina: '#3498DB', loteca: '#F39C12', timemania: '#1ABC9C', diadesorte: '#E67E22' };
         for (const chave of loterias) {
             const lista = preds[chave]?.predicoes || [];
             const s = stats[chave] || {};
-            const cor = colors[chave] || '#00d4aa';
-            const nomes = { megasena: 'Mega-Sena', lotofacil: 'Lotofácil', lotomania: 'Lotomania', quina: 'Quina', loteca: 'Loteca', timemania: 'Timemania', diadesorte: 'Dia de Sorte' };
-            const icons = { megasena: '🎰', lotofacil: '🎯', lotomania: '🍀', quina: '⭐', loteca: '⚽', timemania: '🎮', diadesorte: '📅' };
+            const cor = COLORS[chave] || '#00d4aa';
+            const nome = NOMES[chave] || chave;
+            const icon = ICONS[chave] || '🎲';
             const pendentes = (s.total || 0) - (s.verificadas || 0);
-            const badge = s.verificadas > 0 ? '<span class="badge badge-ok">' + s.verificadas + ' verificados</span>' : '<span class="badge badge-vazia">0 verificados</span>';
-            const badgePend = pendentes > 0 ? '<span class="badge badge-pendente">' + pendentes + ' pendentes</span>' : '';
-            const sorted = [...lista].sort((a, b) => new Date(b.data) - new Date(a.data));
 
-            html += `<div class="loteria-section"><div class="loteria-header" style="--cor:${cor}" onclick="toggleTable('t-${chave}')">
-                <span class="icon">${icons[chave] || '🎲'}</span>
-                <span class="nome">${nomes[chave] || chave}</span>
-                ${badge} ${badgePend}
-                <span style="color:#666;font-size:0.8em">${sorted.length} palpites</span>
+            html += `<div class="loteria-section">`;
+            html += `<div class="loteria-header" style="--cor:${cor}" onclick="toggleSection('sec-${chave}')">
+                <span class="icon">${icon}</span>
+                <span class="nome">${nome}</span>
+                <span class="badge badge-ok">${s.verificadas || 0} verificados</span>
+                ${pendentes > 0 ? '<span class="badge badge-pendente">' + pendentes + ' pendentes</span>' : ''}
+                <span style="color:#666;font-size:0.8em">${lista.length} jogos</span>
             </div>`;
-            html += `<div id="t-${chave}" class="table-wrap">`;
-            if (!sorted.length) {
-                html += '<div class="vazio" style="padding:30px"><i class="fas fa-inbox"></i><br>Nenhum palpite</div>';
+            html += `<div id="sec-${chave}">`;
+
+            if (!lista.length) {
+                html += '<div class="vazio" style="padding:30px"><i class="fas fa-inbox"></i><br>Nenhum jogo</div>';
             } else {
-                html += `<table><thead><tr>
-                    <th>Data</th><th>Fonte</th><th>Numeros</th><th>Conf.</th><th>Acertos</th><th>Acertados</th><th>Concurso</th>
-                </tr></thead><tbody>`;
-                for (const p of sorted) {
-                    const data = new Date(p.data).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-                    const fonte = p.fonte || '?';
-                    const fonteCls = 'fonte-' + fonte.replace(/\s+/g, '');
-                    const nums = p.numeros || [];
-                    const conf = p.confianca || 0;
-                    const acertos = p.acertos;
-                    const acertados = p.numeros_acertados || [];
-                    const verif = p.verificado;
-                    const concurso = p.concurso_verificado || '-';
+                const verificados = lista.filter(p => (p.verificacoes || []).length > 0);
+                const pendentesLista = lista.filter(p => !(p.verificacoes || []).length);
 
-                    let numsHtml = nums.map(n => {
-                        const acertou = verif && acertados.includes(n);
-                        return `<span class="${acertou ? 'num-acertado' : 'num-errado'}">${String(n).padStart(2,'0')}</span>`;
-                    }).join('');
+                html += `<div class="legenda" style="margin-top:10px;margin-bottom:15px;padding:8px 12px;font-size:0.75em">
+                    <strong>Separação por tipo:</strong> IA | Ultra | Global | Combinacoes | Inteligente — cada tipo mostrado separadamente com seus acertos e erros.
+                </div>`;
 
-                    let acertosHtml = verif
-                        ? `<span class="${acertos >= 4 ? 'acerto-alto' : acertos >= 2 ? 'acerto-medio' : 'acerto-baixo'}">${acertos}</span>`
-                        : '<span style="color:#666">—</span>';
-
-                    let acertadosHtml = verif && acertados.length
-                        ? acertados.map(n => `<span class="num-acertado">${String(n).padStart(2,'0')}</span>`).join('')
-                        : verif ? '<span style="color:#666">—</span>' : '<span style="color:#666">pendente</span>';
-
-                    html += `<tr>
-                        <td style="white-space:nowrap;font-size:0.8em;color:#888">${data}</td>
-                        <td><span class="fonte-badge ${fonteCls}">${fonte}</span></td>
-                        <td class="numeros-cell">${numsHtml}</td>
-                        <td>${typeof conf === 'number' ? conf.toFixed(1) : conf}</td>
-                        <td>${acertosHtml}</td>
-                        <td class="numeros-cell">${acertadosHtml}</td>
-                        <td style="color:#666;font-size:0.8em">${concurso}</td>
-                    </tr>`;
+                const gruposPorFonte = {};
+                for (const p of verificados) {
+                    const fonte = p.fonte || 'Outro';
+                    if (!gruposPorFonte[fonte]) gruposPorFonte[fonte] = [];
+                    for (const v of (p.verificacoes || [])) {
+                        gruposPorFonte[fonte].push({ ...p, verificacao: v });
+                    }
                 }
-                html += '</tbody></table>';
+
+                for (const [fonte, jogos] of Object.entries(gruposPorFonte)) {
+                    const fonteCls = 'fonte-' + fonte.replace(/\s+/g, '');
+                    html += `<div class="concurso-group">
+                        <div class="concurso-title" style="border-left-color: var(--cor, #a855f7)">
+                            <span><span class="fonte-badge ${fonteCls}">${fonte}</span></span>
+                            <span style="color:#888;font-size:0.85em">${jogos.length} jogo(s)</span>
+                        </div>`;
+
+                    const concursos = {};
+                    for (const j of jogos) {
+                        const c = j.verificacao.concurso;
+                        if (!concursos[c]) concursos[c] = { sorteio: j.verificacao.numeros_sorteados || [], jogos: [] };
+                        concursos[c].jogos.push(j);
+                    }
+
+                    for (const [numConc, info] of Object.entries(concursos)) {
+                        html += `<div class="concurso-group">
+                            <div class="concurso-title" style="border-left-color:#00d4aa">
+                                <span><i class="fas fa-dice"></i> Concurso #${numConc}</span>
+                                <span style="color:#888;font-size:0.85em">Sorteio:</span>
+                                <span class="sorteio">${info.sorteio.map(n => '<span>' + String(n).padStart(2, '0') + '</span>').join('')}</span>
+                                <span style="color:#666;font-size:0.85em">${info.jogos.length} jogo(s)</span>
+                            </div>`;
+
+                        for (const jogo of info.jogos) {
+                            const nums = jogo.numeros || [];
+                            const v = jogo.verificacao;
+                            const acertos = v.acertos || 0;
+                            const acertados = v.numeros_acertados || [];
+                            const errados = v.numeros_errados || [];
+                            const sorteioSet = new Set(info.sorteio);
+                            const numsSet = new Set(nums);
+
+                            const conf = typeof jogo.confianca === 'number' ? jogo.confianca.toFixed(1) : (jogo.confianca || '—');
+                            const data = new Date(jogo.data).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+                            const id = jogo.id || '—';
+                            const estr = jogo.estrategia || '';
+
+                            html += `<div class="jogo-card">`;
+                            html += `<div class="jogo-header">
+                                <span class="jogo-id">#${id}</span>
+                                <span class="fonte-badge ${fonteCls}">${fonte}</span>
+                                ${estr ? '<span style="font-size:0.7em;color:#a855f7">' + estr + '</span>' : ''}
+                                <span class="jogo-data">${data}</span>
+                                <span class="jogo-conf">Conf: ${conf}%</span>
+                            </div>`;
+
+                            html += `<div class="numeros-row">
+                                <div class="numeros-label">Seus numeros</div>
+                                <div class="numeros-list">${nums.map(n =>
+                                    `<span class="${numsSet.has(n) && info.sorteio.includes(n) ? 'num-acerto' : 'num-erro'}">${String(n).padStart(2, '0')}</span>`
+                                ).join('')}</div>
+                            </div>`;
+
+                            html += `<div class="numeros-row">
+                                <div class="numeros-label">Numeros sorteados</div>
+                                <div class="numeros-list">${info.sorteio.map(n =>
+                                    `<span class="${numsSet.has(n) ? 'num-drawn' : 'num-nao-drawn'}">${String(n).padStart(2, '0')}</span>`
+                                ).join('')}</div>
+                            </div>`;
+
+                            html += `<div class="resultado-acertos">
+                                <span class="acerto-count acerto-${acertos}">${acertos} acerto${acertos !== 1 ? 's' : ''}</span>
+                                ${acertados.length ? '<span class="acerto-label">Acertou: ' + acertados.map(n => String(n).padStart(2, '0')).join(', ') + '</span>' : ''}
+                                ${errados.length ? '<span class="acerto-label" style="color:#ff6b6b">Errou: ' + errados.map(n => String(n).padStart(2, '0')).join(', ') + '</span>' : ''}
+                            </div>`;
+
+                            html += `</div>`;
+                        }
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                if (pendentesLista.length) {
+                    const pendGroups = {};
+                    for (const p of pendentesLista) {
+                        const fonte = p.fonte || 'Outro';
+                        if (!pendGroups[fonte]) pendGroups[fonte] = [];
+                        pendGroups[fonte].push(p);
+                    }
+
+                    for (const [fonte, jogos] of Object.entries(pendGroups)) {
+                        const fonteCls = 'fonte-' + fonte.replace(/\s+/g, '');
+                        html += `<div class="concurso-group">
+                            <div class="concurso-title" style="border-left-color:#ffc107">
+                                <span><span class="fonte-badge ${fonteCls}">${fonte}</span></span>
+                                <span style="color:#888;font-size:0.85em">${jogos.length} jogo(s) aguardando</span>
+                            </div>`;
+                        for (const p of jogos) {
+                            const nums = p.numeros || [];
+                            const conf = typeof p.confianca === 'number' ? p.confianca.toFixed(1) : (p.confianca || '—');
+                            const data = new Date(p.data).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+                            const id = p.id || '—';
+                            const concurso = p.concurso_criacao || '—';
+
+                            html += `<div class="jogo-card" style="opacity:0.7">
+                                <div class="jogo-header">
+                                    <span class="jogo-id">#${id}</span>
+                                    <span class="fonte-badge ${fonteCls}">${fonte}</span>
+                                    <span class="jogo-data">${data}</span>
+                                    <span class="jogo-conf">Conf: ${conf}%</span>
+                                    <span style="font-size:0.75em;color:#888">Concurso: ${concurso}</span>
+                                </div>
+                                <div class="numeros-row">
+                                    <div class="numeros-label">Seus numeros</div>
+                                    <div class="numeros-list">${nums.map(n =>
+                                        `<span class="num-nao-drawn">${String(n).padStart(2, '0')}</span>`
+                                    ).join('')}</div>
+                                </div>
+                                <div class="pendente-label"><i class="fas fa-clock"></i> Aguardando resultado do Concurso #${concurso}</div>
+                            </div>`;
+                        }
+                        html += `</div>`;
+                    }
+                }
             }
-            html += '</div></div>';
+            html += `</div></div>`;
         }
         container.innerHTML = html;
     }
 
-    function toggleTable(id) {
+    function toggleSection(id) {
         const el = document.getElementById(id);
         if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
     }
 
     async function verificarAgora() {
         const btn = document.querySelector('.btn-verificar');
-        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...'; }
         try {
             const resp = await fetch('/api/verificar-resultados', { method: 'POST' });
             const r = await resp.json();
-            alert(`✅ Verificacao concluida!\n${r.loterias_verificadas} loterias processadas.`);
-            carregar();
+            await carregar();
         } catch(e) {
             alert('Erro ao verificar: ' + e.message);
         }
-        btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verificar Agora';
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verificar Agora'; }
     }
 
-    document.addEventListener('DOMContentLoaded', carregar);
+    document.addEventListener('DOMContentLoaded', () => {
+        verificarAgora();
+    });
     </script>
 </body>
 </html>

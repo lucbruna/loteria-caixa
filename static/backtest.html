@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backtest - Loteria Federal IA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a1a; color: #e0e0e0; min-height: 100vh; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at 20% 50%, rgba(0,212,170,0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.06) 0%, transparent 50%); z-index: -1; }
+        .cabecalho { background: linear-gradient(135deg, rgba(26,26,62,0.98), rgba(17,17,40,0.99)); border-bottom: 1px solid #2a2a5a; padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(20px); }
+        .conteudo-cabecalho { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo h1 { font-size: 1.3rem; background: linear-gradient(90deg, #00d4aa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .logo span { font-size: 0.8rem; color: #888; }
+        .nav-links { display: flex; gap: 12px; }
+        .nav-link { padding: 8px 16px; background: rgba(255,255,255,0.06); color: #ccc; border: 1px solid #2a2a5a; border-radius: 8px; cursor: pointer; font-size: 0.85em; text-decoration: none; transition: all 0.2s; }
+        .nav-link:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .nav-link.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-color: transparent; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .card { background: #1a1a3e; border: 1px solid #2a2a5a; border-radius: 16px; padding: 24px; margin-bottom: 1.5rem; }
+        .card-titulo { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; color: #a855f7; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.85rem; color: #888; margin-bottom: 6px; }
+        .form-group select, .form-group input { width: 100%; padding: 10px 14px; background: #0f0f2a; border: 1px solid #2a2a5a; border-radius: 8px; color: #e0e0e0; font-size: 0.95rem; }
+        .form-group select:focus, .form-group input:focus { outline: none; border-color: #a855f7; }
+        .btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95em; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; color: #fff; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-primario { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-verde { background: linear-gradient(135deg, #00d4aa, #0099cc); }
+        .chart-container { position: relative; height: 350px; margin: 1rem 0; }
+        .chart-container canvas { width: 100% !important; }
+        .resultado-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .resultado-item { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; text-align: center; }
+        .resultado-item .valor { font-size: 1.8em; font-weight: 700; color: #00d4aa; }
+        .resultado-item .label { font-size: 0.8em; color: #888; margin-top: 4px; }
+        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9em; }
+        .alert-success { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3); color: #00d4aa; }
+        .alert-info { background: rgba(59,130,243,0.1); border: 1px solid rgba(59,130,243,0.3); color: #60a5fa; }
+        .loading { text-align: center; padding: 60px 20px; color: #888; }
+        .loading i { font-size: 2em; animation: spin 1s linear infinite; color: #00d4aa; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+        th { text-align: left; padding: 10px 12px; background: rgba(255,255,255,0.04); color: #888; font-weight: 600; }
+        td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        @media (max-width: 768px) { .container { padding: 1rem; } .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <header class="cabecalho">
+        <div class="conteudo-cabecalho">
+            <div class="logo"><div><h1>Backtest</h1><span>Loteria Federal IA</span></div></div>
+            <div class="nav-links">
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="/resultados" class="nav-link"><i class="fas fa-chart-line"></i> Resultados</a>
+                <a href="/simulacao" class="nav-link"><i class="fas fa-dice"></i> Simulacoes</a>
+                <a href="/backtest" class="nav-link active"><i class="fas fa-history"></i> Backtest</a>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <div class="card">
+            <div class="card-titulo"><i class="fas fa-history"></i> Backtest Walk-Forward</div>
+            <p style="color:#888;font-size:0.85em;margin-bottom:1rem">Teste a eficacia dos metodos de IA em dados historicos usando walk-forward validation.</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Loteria</label>
+                    <select id="bt-loteria">
+                        <option value="lotofacil">Lotofacil</option>
+                        <option value="megasena">Mega-Sena</option>
+                        <option value="quina">Quina</option>
+                        <option value="lotomania">Lotomania</option>
+                        <option value="timemania">Timemania</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Janelas (concursos de treino)</label>
+                    <input type="number" id="bt-janelas" value="50" min="10" max="200">
+                </div>
+                <div class="form-group">
+                    <label>Jogos por concurso no backtest</label>
+                    <input type="number" id="bt-jogos" value="3" min="1" max="10">
+                </div>
+                <div class="form-group" style="display:flex;align-items:flex-end">
+                    <button class="btn btn-primario" onclick="executarBacktest()"><i class="fas fa-play"></i> Executar Backtest</button>
+                </div>
+            </div>
+            <div id="bt-progress" style="display:none"><div class="loading"><i class="fas fa-spinner"></i><br>Executando backtest walk-forward...</div></div>
+            <div id="bt-resultado"></div>
+        </div>
+        <div class="card" id="bt-chart-card" style="display:none">
+            <div class="card-titulo"><i class="fas fa-chart-line"></i> Resultado do Backtest</div>
+            <div class="chart-container"><canvas id="chart-backtest"></canvas></div>
+        </div>
+    </div>
+    <script>
+    async function executarBacktest() {
+        var loteria = document.getElementById('bt-loteria').value;
+        var janelas = parseInt(document.getElementById('bt-janelas').value) || 50;
+        var jogos = parseInt(document.getElementById('bt-jogos').value) || 3;
+
+        document.getElementById('bt-progress').style.display = 'block';
+        document.getElementById('bt-resultado').innerHTML = '';
+        document.getElementById('bt-chart-card').style.display = 'none';
+
+        try {
+            var resp = await fetch('/api/backtest/' + loteria + '/' + janelas);
+            if (!resp.ok) throw new Error('Erro no backtest');
+            var data = await resp.json();
+            document.getElementById('bt-progress').style.display = 'none';
+            renderBacktestResult(data, loteria);
+        } catch(e) {
+            document.getElementById('bt-progress').style.display = 'none';
+            document.getElementById('bt-resultado').innerHTML = '<div class="alert alert-info"><i class="fas fa-exclamation-triangle"></i> Erro: ' + e.message + '</div>';
+        }
+    }
+
+    function renderBacktestResult(data, loteria) {
+        var html = '';
+        if (data.erro) {
+            html = '<div class="alert alert-info"><i class="fas fa-info-circle"></i> ' + data.erro + '</div>';
+        } else {
+            html += '<div class="alert alert-success"><i class="fas fa-check-circle"></i> Backtest concluido!</div>';
+            html += '<div class="resultado-grid">';
+            html += '<div class="resultado-item"><div class="valor">' + (data.algoritmo || 'Walk-Forward') + '</div><div class="label">Metodo</div></div>';
+            html += '<div class="resultado-item"><div class="valor">' + (data.janelas_testadas || 0) + '</div><div class="label">Janelas Testadas</div></div>';
+            html += '<div class="resultado-item"><div class="valor" style="color:#00d4aa">' + (data.acertos_totais_ia || 0) + '</div><div class="label">Acertos IA</div></div>';
+            html += '<div class="resultado-item"><div class="valor" style="color:#f59e0b">' + (data.acertos_totais_random || 0) + '</div><div class="label">Acertos Aleatorio</div></div>';
+            html += '<div class="resultado-item"><div class="valor" style="color:#a855f7">' + (data.vantagem_percentual || 0).toFixed(2) + '%</div><div class="label">Vantagem IA</div></div>';
+            html += '</div>';
+
+            if (data.resultados_ia && data.resultados_random) {
+                var maxKey = Math.max.apply(null, Object.keys(data.resultados_ia).map(Number).concat(Object.keys(data.resultados_random).map(Number).concat([0])));
+                var labels = [];
+                var iaData = [];
+                var randData = [];
+                for (var i = 0; i <= maxKey; i++) {
+                    labels.push(i + ' acertos');
+                    iaData.push(data.resultados_ia[i] || 0);
+                    randData.push(data.resultados_random[i] || 0);
+                }
+                var ctx = document.getElementById('chart-backtest');
+                if (typeof Chart !== 'undefined') {
+                    if (window.BT_CHART) window.BT_CHART.destroy();
+                    window.BT_CHART = new Chart(ctx, {
+                        type: 'bar',
+                        data: { labels: labels, datasets: [
+                            { label: 'IA', data: iaData, backgroundColor: 'rgba(0,212,170,0.6)', borderRadius: 4 },
+                            { label: 'Aleatorio', data: randData, backgroundColor: 'rgba(255,193,7,0.6)', borderRadius: 4 }
+                        ]},
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Distribuicao de Acertos por Concurso', color: '#e0e0e0' }, legend: { labels: { color: '#e0e0e0' } } }, scales: { x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'Frequencia', color: '#888' }, beginAtZero: true } } }
+                    });
+                }
+                document.getElementById('bt-chart-card').style.display = 'block';
+            }
+        }
+        document.getElementById('bt-resultado').innerHTML = html;
+    }
+    </script>
+</body>
+</html>
