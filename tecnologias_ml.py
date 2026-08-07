@@ -9,12 +9,14 @@ from sklearn.preprocessing import StandardScaler
 
 try:
     import xgboost as xgb
-except ImportError:
+except Exception:
+    # XGBoostLibraryNotFound (DLL ausente no bundle) herda de XGBoostError,
+    # nao de ImportError - capturamos Exception para degradar com graca.
     xgb = None
 
 try:
     import lightgbm as lgb
-except ImportError:
+except Exception:
     lgb = None
 
 

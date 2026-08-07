@@ -2,8 +2,10 @@
 Servidor Flask - API Backend Atualizado
 """
 import json
+import logging
 import os
 import threading
+import traceback
 import uuid
 from datetime import datetime
 
@@ -36,6 +38,18 @@ from prediction_storage import (
 
 app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"))
 CORS(app)
+
+logger_erros = logging.getLogger("loteria_federal")
+if not logger_erros.handlers:
+    _file_handler = logging.FileHandler("loteria_federal_errors.log", encoding="utf-8")
+    _file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    logger_erros.addHandler(_file_handler)
+
+
+@app.errorhandler(Exception)
+def handle_erro_interno(e):
+    logger_erros.error("Excecao nao tratada:\n" + traceback.format_exc())
+    return jsonify({"erro": "Erro interno do servidor"}), 500
 
 
 @app.after_request
