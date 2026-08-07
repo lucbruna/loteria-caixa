@@ -3,6 +3,7 @@ import os
 import threading
 import uuid
 from datetime import datetime
+
 from config import DATA_DIR
 
 PREDICOES_FILE = os.path.join(DATA_DIR, "predicoes.json")
@@ -13,7 +14,7 @@ def _load() -> dict:
     if not os.path.exists(PREDICOES_FILE):
         return {}
     try:
-        with open(PREDICOES_FILE, "r", encoding="utf-8") as f:
+        with open(PREDICOES_FILE, encoding="utf-8") as f:
             return json.load(f)
     except (json.JSONDecodeError, OSError):
         return {}
@@ -83,7 +84,13 @@ def obter_estatisticas(lottery: str | None = None) -> dict:
         total_verificacoes = sum(len(p.get("verificacoes", [])) for p in preds)
         preds_com_verif = [p for p in preds if p.get("verificacoes")]
         if not total:
-            stats[chave] = {"total": 0, "verificadas": 0, "total_verificacoes": 0, "media_acertos": 0, "por_verificar": total}
+            stats[chave] = {
+                "total": 0,
+                "verificadas": 0,
+                "total_verificacoes": 0,
+                "media_acertos": 0,
+                "por_verificar": total
+            }
             continue
         todos_acertos = []
         dist = {}

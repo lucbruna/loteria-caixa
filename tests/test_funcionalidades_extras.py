@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import LOTTERIES
-from funcionalidades_avancadas import FuncionalidadesAvancadas as FA
+from funcionalidades_avancadas import FuncionalidadesAvancadas
 
 
 def _fake_resultados(n=150, seed=3):
@@ -21,7 +21,7 @@ def test_teste_chi_quadrado():
         for d in r["listaDezenas"]:
             freq[int(d)] = freq.get(int(d), 0) + 1
     expected = {n: len(res) * 6 / 60 for n in range(1, 61)}
-    result = FA.teste_chi_quadrado(freq, expected)
+    result = FuncionalidadesAvancadas.teste_chi_quadrado(freq, expected)
     assert "chi2" in result
     assert "p_valor" in result
 
@@ -29,7 +29,7 @@ def test_teste_chi_quadrado():
 def test_teste_ks():
     dados1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     dados2 = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-    result = FA.teste_ks(dados1, dados2)
+    result = FuncionalidadesAvancadas.teste_ks(dados1, dados2)
     assert "estatistica_D" in result
     assert result["estatistica_D"] > 0.5  # distribuições muito diferentes
 
@@ -37,23 +37,23 @@ def test_teste_ks():
 def test_teste_ks_distribuicoes_similares():
     dados1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     dados2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    result = FA.teste_ks(dados1, dados2)
+    result = FuncionalidadesAvancadas.teste_ks(dados1, dados2)
     assert result["estatistica_D"] == 0.0
 
 
 def test_kelly_criterion():
-    result = FA.kelly_criterion(5.0, 5_000_000, 0.00000002)
+    result = FuncionalidadesAvancadas.kelly_criterion(5.0, 5_000_000, 0.00000002)
     assert "kelly_fraction" in result
     assert "recomendacao" in result
 
 
 def test_kelly_criterion_invalido():
-    result = FA.kelly_criterion(5.0, 5_000_000, 0)
+    result = FuncionalidadesAvancadas.kelly_criterion(5.0, 5_000_000, 0)
     assert "erro" in result
 
 
 def test_importar_csv():
     cfg = LOTTERIES["megasena"]
     csv_content = "1,2,3,4,5,6\n7,8,9,10,11,12\n"
-    result = FA.importar_csv(csv_content, cfg)
+    result = FuncionalidadesAvancadas.importar_csv(csv_content, cfg)
     assert result["resultados_importados"] == 2

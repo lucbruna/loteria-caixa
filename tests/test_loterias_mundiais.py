@@ -11,7 +11,7 @@ def test_loterias_mundiais_contem_dados():
 
 
 def test_loteria_tem_campos_obrigatorios():
-    for chave, loteria in LOTERIAS_MUNDIAIS.items():
+    for _chave, loteria in LOTERIAS_MUNDIAIS.items():
         assert "nome" in loteria
         assert "min_num" in loteria
         assert "max_num" in loteria

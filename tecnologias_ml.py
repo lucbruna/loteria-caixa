@@ -1,11 +1,11 @@
-import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.model_selection import cross_val_score, TimeSeriesSplit
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
-from scipy import stats
 from collections import Counter
+
+import numpy as np
+from scipy import stats
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import TimeSeriesSplit, cross_val_score
+from sklearn.preprocessing import StandardScaler
 
 try:
     import xgboost as xgb
@@ -31,7 +31,7 @@ def _dezenas_int(concurso):
 
 
 class RegressaoLogistica:
-    def __init__(self, C=1.0, penalty='l2', max_iter=1000):
+    def __init__(self, C=1.0, penalty='l2', max_iter=1000):  # noqa: N803
         self.C = C
         self.penalty = penalty
         self.max_iter = max_iter
@@ -51,18 +51,18 @@ class RegressaoLogistica:
                 matriz_features.append(self._extrair_features(resultados, i, n, total_numeros, qtd_sorteados))
                 y_binario.append(1 if n in concurso_atual else 0)
 
-        X = np.array(matriz_features, dtype=float)
+        x = np.array(matriz_features, dtype=float)
         y = np.array(y_binario)
         if len(np.unique(y)) < 2:
             return {"erro": "Classe unica nos dados"}
 
-        X_scaled = StandardScaler().fit_transform(X)
+        x_scaled = StandardScaler().fit_transform(x)
         # Nota: penalty foi deprecado no sklearn 1.8 (removido na 1.10).
         # solver='liblinear' ja aplica L2 por padrao, equivalente ao antigo penalty='l2'.
         modelo = LogisticRegression(C=self.C, max_iter=self.max_iter, solver='liblinear', random_state=42)
-        modelo.fit(X_scaled, y)
+        modelo.fit(x_scaled, y)
 
-        probabilities = modelo.predict_proba(X_scaled)[:, 1]
+        probabilities = modelo.predict_proba(x_scaled)[:, 1]
         prob_by_num = {}
         for idx, n in enumerate(range(min_num, max_num + 1)):
             prob_by_num[n] = float(np.mean(probabilities[idx::total_numeros]))
@@ -70,13 +70,13 @@ class RegressaoLogistica:
         top_nums = sorted(prob_by_num.items(), key=lambda x: -x[1])
 
         tscv = TimeSeriesSplit(n_splits=min(5, n_concursos - 1))
-        scores = cross_val_score(modelo, X_scaled, y, cv=tscv, scoring='accuracy')
+        scores = cross_val_score(modelo, x_scaled, y, cv=tscv, scoring='accuracy')
         ac_cv = float(np.mean(scores)) if len(scores) > 0 else 0.0
 
         return {
             "classe": "Regressao Logistica",
             "regularizacao": f"L{self.penalty[1]} (C={self.C})",
-            "acuracia_treino": round(accuracy_score(y, modelo.predict(X_scaled)), 4),
+            "acuracia_treino": round(accuracy_score(y, modelo.predict(x_scaled)), 4),
             "acuracia_cross_val": round(ac_cv, 4),
             "top10_mais_probaveis": [{"numero": n, "probabilidade": round(p, 4)} for n, p in top_nums[:10]],
             "top10_menos_probaveis": [{"numero": n, "probabilidade": round(p, 4)} for n, p in top_nums[-10:]],
@@ -124,7 +124,6 @@ class ArimaReal:
                 resultados_arima[n] = media_hist
 
         esperado = n_concursos * qtd_sorteados / total_numeros
-        z_scores = {n: (v - esperado) / max(0.01, np.std(list(resultados_arima.values()))) for n, v in resultados_arima.items()}
 
         top_sorted = sorted(resultados_arima.items(), key=lambda x: -x[1])
         quentes_arima = top_sorted[:10]
@@ -140,7 +139,10 @@ class ArimaReal:
             "numeros_recomendados": numeros_recomendados,
             "top10_quentes_forecast": [{"numero": n, "previsao": round(p, 4)} for n, p in quentes_arima],
             "top10_frios_forecast": [{"numero": n, "previsao": round(p, 4)} for n, p in frios_arima],
-            "probabilidades": {str(k): round(float(v), 4) for k, v in sorted(resultados_arima.items(), key=lambda x: -x[1])},
+            "probabilidades": {
+                str(k): round(float(v), 4)
+                for k, v in sorted(resultados_arima.items(), key=lambda x: -x[1])
+            },
         }
 
 
@@ -167,7 +169,7 @@ class XGBoostReal:
                 matriz_features.append(self._extrair_features(resultados, i, n, total_numeros, qtd_sorteados))
                 y_binario.append(1 if n in concurso_atual else 0)
 
-        X = np.array(matriz_features, dtype=float)
+        x = np.array(matriz_features, dtype=float)
         y = np.array(y_binario)
         if len(np.unique(y)) < 2:
             return {"erro": "Classe unica"}
@@ -177,9 +179,9 @@ class XGBoostReal:
             learning_rate=self.learning_rate, subsample=0.8, colsample_bytree=0.8,
             random_state=42, eval_metric='logloss'
         )
-        modelo.fit(X, y)
+        modelo.fit(x, y)
 
-        prob = modelo.predict_proba(X)[:, 1]
+        prob = modelo.predict_proba(x)[:, 1]
         prob_by_num = {}
         for idx, n in enumerate(range(min_num, max_num + 1)):
             prob_by_num[n] = float(np.mean(prob[idx::total_numeros]))
@@ -190,7 +192,7 @@ class XGBoostReal:
         top_nums = sorted(prob_by_num.items(), key=lambda x: -x[1])
 
         tscv = TimeSeriesSplit(n_splits=min(5, n_concursos - 1))
-        scores = cross_val_score(modelo, X, y, cv=tscv, scoring='accuracy')
+        scores = cross_val_score(modelo, x, y, cv=tscv, scoring='accuracy')
         ac_cv = float(np.mean(scores)) if len(scores) > 0 else 0.0
 
         return {
@@ -198,7 +200,7 @@ class XGBoostReal:
             "n_estimators": self.n_estimators,
             "max_depth": self.max_depth,
             "learning_rate": self.learning_rate,
-            "acuracia_treino": round(accuracy_score(y, modelo.predict(X)), 4),
+            "acuracia_treino": round(accuracy_score(y, modelo.predict(x)), 4),
             "acuracia_cross_val": round(ac_cv, 4),
             "top10_mais_probaveis": [{"numero": n, "probabilidade": round(p, 4)} for n, p in top_nums[:10]],
             "top10_menos_probaveis": [{"numero": n, "probabilidade": round(p, 4)} for n, p in top_nums[-10:]],
@@ -242,7 +244,7 @@ class LightGBMReal:
                 matriz_features.append(self._extrair_features(resultados, i, n, total_numeros, qtd_sorteados))
                 y_binario.append(1 if n in concurso_atual else 0)
 
-        X = np.array(matriz_features, dtype=float)
+        x = np.array(matriz_features, dtype=float)
         y = np.array(y_binario)
         if len(np.unique(y)) < 2:
             return {"erro": "Classe unica"}
@@ -252,9 +254,9 @@ class LightGBMReal:
             learning_rate=self.learning_rate, subsample=0.8, colsample_bytree=0.8,
             random_state=42, verbose=-1
         )
-        modelo.fit(X, y)
+        modelo.fit(x, y)
 
-        prob = modelo.predict_proba(X)[:, 1]
+        prob = modelo.predict_proba(x)[:, 1]
         prob_by_num = {}
         for idx, n in enumerate(range(min_num, max_num + 1)):
             prob_by_num[n] = float(np.mean(prob[idx::total_numeros]))
@@ -265,7 +267,7 @@ class LightGBMReal:
         top_nums = sorted(prob_by_num.items(), key=lambda x: -x[1])
 
         tscv = TimeSeriesSplit(n_splits=min(5, n_concursos - 1))
-        scores = cross_val_score(modelo, X, y, cv=tscv, scoring='accuracy')
+        scores = cross_val_score(modelo, x, y, cv=tscv, scoring='accuracy')
         ac_cv = float(np.mean(scores)) if len(scores) > 0 else 0.0
 
         return {
@@ -273,7 +275,7 @@ class LightGBMReal:
             "n_estimators": self.n_estimators,
             "max_depth": self.max_depth,
             "learning_rate": self.learning_rate,
-            "acuracia_treino": round(accuracy_score(y, modelo.predict(X)), 4),
+            "acuracia_treino": round(accuracy_score(y, modelo.predict(x)), 4),
             "acuracia_cross_val": round(ac_cv, 4),
             "top10_mais_probaveis": [{"numero": n, "probabilidade": round(p, 4)} for n, p in top_nums[:10]],
             "top10_menos_probaveis": [{"numero": n, "probabilidade": round(p, 4)} for n, p in top_nums[-10:]],
@@ -319,7 +321,10 @@ class DistribuicaoPoisson:
             p_geom = lam / (n_concursos + 1)
             prob_geometrica[n] = float(stats.geom.pmf(1, p_geom) if 0 < p_geom < 1 else 1 / total_numeros)
 
-        normalizado = {k: float((prob_poisson.get(k, 0) + prob_geometrica.get(k, 0)) / 2) for k in range(min_num, max_num + 1)}
+        normalizado = {
+            k: float((prob_poisson.get(k, 0) + prob_geometrica.get(k, 0)) / 2)
+            for k in range(min_num, max_num + 1)
+        }
         soma = sum(normalizado.values()) or 1
         normalizado = {k: v / soma for k, v in normalizado.items()}
 
@@ -332,7 +337,9 @@ class DistribuicaoPoisson:
             "top10_poisson": [{"numero": n, "prob": round(p, 4)} for n, p in top_poisson[:10]],
             "top10_poisson_frio": [{"numero": n, "prob": round(p, 4)} for n, p in top_poisson[-10:]],
             "numeros_recomendados": [n for n, _ in top_poisson[:qtd_sorteados * 2]],
-            "probabilidades_combinadas": {str(k): round(v, 6) for k, v in sorted(normalizado.items(), key=lambda x: -x[1])},
+            "probabilidades_combinadas": {
+                str(k): round(v, 6) for k, v in sorted(normalizado.items(), key=lambda x: -x[1])
+            },
         }
 
 

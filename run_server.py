@@ -4,6 +4,7 @@ Loteria Federal - Launcher do Servidor (versao empacotada / .exe)
 Inicia o servidor Flask e abre o dashboard no navegador padrao.
 Usado tanto em desenvolvimento quanto no executavel gerado pelo PyInstaller.
 """
+import contextlib
 import sys
 import threading
 import time
@@ -16,10 +17,8 @@ from config import FLASK_HOST, FLASK_PORT
 def _abrir_navegador():
     """Abre o dashboard alguns segundos apos o servidor subir."""
     time.sleep(2.5)
-    try:
+    with contextlib.suppress(Exception):
         webbrowser.open(f"http://{FLASK_HOST}:{FLASK_PORT}")
-    except Exception:
-        pass
 
 
 def main():

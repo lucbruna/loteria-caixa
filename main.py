@@ -8,10 +8,10 @@ from datetime import datetime
 
 from analyzer import AnalisadorLoteriasAvancado
 from api_client import api_client
-
-analisador = AnalisadorLoteriasAvancado()
 from config import FLASK_DEBUG, FLASK_HOST, FLASK_PORT, LOTTERIES, RESULTS_DIR
 from prediction_storage import obter_estatisticas, verificar_todas_predicoes
+
+analisador = AnalisadorLoteriasAvancado()
 
 
 def testar_api():
@@ -143,7 +143,7 @@ def main():
             buscar_dados()
         elif opcao == "3":
             print("\nLoterias disponiveis:")
-            for i, (key, config) in enumerate(LOTTERIES.items(), 1):
+            for i, (_key, config) in enumerate(LOTTERIES.items(), 1):
                 print(f"  {i}. {config['name']}")
             escolha = input("\nEscolha o numero: ").strip()
             chaves = list(LOTTERIES.keys())

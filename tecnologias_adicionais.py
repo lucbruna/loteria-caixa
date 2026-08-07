@@ -38,7 +38,7 @@ class TecnologiasAdicionais:
         janela = 10
 
         # Preparar dados para LSTM
-        X = []
+        x = []
         y = []
 
         for i in range(len(serie) - janela):
@@ -55,25 +55,25 @@ class TecnologiasAdicionais:
                 if d - minimo < len(saida):
                     saida[d - minimo] = 1
 
-            X.append(entrada)
+            x.append(entrada)
             y.append(saida)
 
-        X = np.array(X)
+        x = np.array(x)
         y = np.array(y)
 
         # Simular LSTM (simplificado)
         # Em producao, usaria TensorFlow/PyTorch
-        pesos = np.random.randn(X.shape[1], y.shape[1]) * 0.01
+        pesos = np.random.randn(x.shape[1], y.shape[1]) * 0.01
 
         # Treinar (simplificado)
         for _ in range(50):
-            pred = X.dot(pesos)
+            pred = x.dot(pesos)
             erro = y - pred
-            gradientes = X.T.dot(erro) / len(X)
+            gradientes = x.T.dot(erro) / len(x)
             pesos += gradientes * 0.01
 
         # Prever
-        ultimo_input = np.array([X[-1]])
+        ultimo_input = np.array([x[-1]])
         previsao = ultimo_input.dot(pesos)[0]
 
         probabilidades = {}
@@ -101,12 +101,11 @@ class TecnologiasAdicionais:
         """
         minimo = config["min_num"]
         maximo = config["max_num"]
-        qtd_escolher = config["pick_count"]
 
         # Inicializar tabela Q
         n_estados = 100  # Estados discretizados
         n_acoes = maximo - minimo + 1
-        Q = np.zeros((n_estados, n_acoes))
+        q = np.zeros((n_estados, n_acoes))
 
         # Taxa de aprendizado e desconto
         alpha = 0.1
@@ -124,10 +123,7 @@ class TecnologiasAdicionais:
             estado = np.random.randint(0, n_estados)
 
             # Escolher acao (epsilon-greedy)
-            if np.random.random() < epsilon:
-                acao = np.random.randint(0, n_acoes)
-            else:
-                acao = np.argmax(Q[estado])
+            acao = np.random.randint(0, n_acoes) if np.random.random() < epsilon else np.argmax(q[estado])
 
             # Recompensa baseada em frequencia historica
             num = minimo + acao
@@ -137,12 +133,12 @@ class TecnologiasAdicionais:
             proximo_estado = (estado + acao) % n_estados
 
             # Atualizar Q
-            Q[estado, acao] = Q[estado, acao] + alpha * (
-                recompensa + gamma * np.max(Q[proximo_estado]) - Q[estado, acao]
+            q[estado, acao] = q[estado, acao] + alpha * (
+                recompensa + gamma * np.max(q[proximo_estado]) - q[estado, acao]
             )
 
         # Extrair politica otimizada
-        politica = np.argmax(Q, axis=1)
+        politica = np.argmax(q, axis=1)
 
         # Gerar probabilidades
         probabilidades = {}
@@ -231,9 +227,6 @@ class TecnologiasAdicionais:
         Analise de Caos e Sistemas Dinamicos
         Detecta sensibilidade a condicoes iniciais
         """
-        minimo = config["min_num"]
-        maximo = config["max_num"]
-
         # Criar serie temporal
         serie = []
         for r in resultados:
@@ -284,7 +277,11 @@ class TecnologiasAdicionais:
             "classificacao_sistema": descricao,
             "dimensao_atrator": round(dimensao, 4),
             "recomendacao": recomendacao,
-            "previsibilidade": "alta" if tipo_sistema == "estavel" else "media" if tipo_sistema == "limite_caos" else "baixa"
+            "previsibilidade": (
+                "alta" if tipo_sistema == "estavel"
+                else "media" if tipo_sistema == "limite_caos"
+                else "baixa"
+            )
         }
 
     # ==========================================
@@ -297,9 +294,6 @@ class TecnologiasAdicionais:
         Analise Wavelet para multi-escala
         Detecta padroes em diferentes escalas temporais
         """
-        minimo = config["min_num"]
-        maximo = config["max_num"]
-
         # Criar serie temporal
         serie = []
         for r in resultados:
@@ -355,7 +349,10 @@ class TecnologiasAdicionais:
             "escalas": escalas,
             "escala_dominante": escala_dominante["nivel"],
             "energia_total": round(energia_total, 4),
-            "interpretacao": f"Escala {escala_dominante['nivel']} domina com {escala_dominante['percentual_energia']}% da energia"
+            "interpretacao": (
+                f"Escala {escala_dominante['nivel']} domina com "
+                f"{escala_dominante['percentual_energia']}% da energia"
+            )
         }
 
     # ==========================================
@@ -378,7 +375,7 @@ class TecnologiasAdicionais:
                 historico[int(d)] += 1
 
         # Features: [frequencia, ultima_posicao, vizinhos]
-        X = []
+        x = []
         numeros = []
 
         for num in range(minimo, maximo + 1):
@@ -397,27 +394,27 @@ class TecnologiasAdicionais:
                 if v != num and historico.get(v, 0) > 0:
                     vizinhos += 1
 
-            X.append([freq, ultima_pos, vizinhos])
+            x.append([freq, ultima_pos, vizinhos])
             numeros.append(num)
 
-        X = np.array(X, dtype=float)
+        x = np.array(x, dtype=float)
 
         # Normalizar
-        X_norm = (X - X.mean(axis=0)) / (X.std(axis=0) + 1e-8)
+        x_norm = (x - x.mean(axis=0)) / (x.std(axis=0) + 1e-8)
 
         # K-Means simplificado
         np.random.seed(42)
-        centroids = X_norm[np.random.choice(len(X_norm), k, replace=False)]
+        centroids = x_norm[np.random.choice(len(x_norm), k, replace=False)]
 
         for _ in range(20):
             # Atribuir ao cluster mais proximo
-            dists = np.sqrt(((X_norm[:, np.newaxis] - centroids[np.newaxis, :]) ** 2).sum(axis=2))
+            dists = np.sqrt(((x_norm[:, np.newaxis] - centroids[np.newaxis, :]) ** 2).sum(axis=2))
             clusters = np.argmin(dists, axis=1)
 
             # Atualizar centroids
             for i in range(k):
                 if np.sum(clusters == i) > 0:
-                    centroids[i] = X_norm[clusters == i].mean(axis=0)
+                    centroids[i] = x_norm[clusters == i].mean(axis=0)
 
         # Resultados
         clusters_resultado = {}
@@ -426,7 +423,7 @@ class TecnologiasAdicionais:
             clusters_resultado[f"Cluster_{i+1}"] = {
                 "numeros": sorted(nums_cluster),
                 "tamanho": len(nums_cluster),
-                "media_frequencia": round(float(X[clusters == i, 0].mean()), 2) if np.sum(clusters == i) > 0 else 0
+                "media_frequencia": round(float(x[clusters == i, 0].mean()), 2) if np.sum(clusters == i) > 0 else 0
             }
 
         return {
@@ -646,9 +643,6 @@ class TecnologiasAdicionais:
         Analise Fractal - Auto-similaridade
         Detecta padroes que se repetem em diferentes escalas
         """
-        minimo = config["min_num"]
-        maximo = config["max_num"]
-
         # Criar serie temporal
         serie = []
         for r in resultados:
@@ -671,16 +665,16 @@ class TecnologiasAdicionais:
             desvios = data - media
             soma_acumulada = np.cumsum(desvios)
 
-            R = np.max(soma_acumulada) - np.min(soma_acumulada)
-            S = np.std(data)
+            r = np.max(soma_acumulada) - np.min(soma_acumulada)
+            s = np.std(data)
 
-            if S == 0:
+            if s == 0:
                 return 0.5
 
-            RS = R / S
-            H = np.log(RS) / np.log(n) if RS > 0 else 0.5
+            rs = r / s
+            h = np.log(rs) / np.log(n) if rs > 0 else 0.5
 
-            return min(1.0, max(0.0, H))
+            return min(1.0, max(0.0, h))
 
         hurst = calcular_hurst(serie)
 

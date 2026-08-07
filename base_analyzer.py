@@ -50,7 +50,9 @@ class AnalisadorBase:
                 "relativa": round((vezes / total_numeros_sorteados) * 100, 4) if total_numeros_sorteados > 0 else 0,
                 "esperada": round(total_numeros_sorteados / faixa, 4),
                 "desvio": round(vezes - (total_numeros_sorteados / faixa), 4),
-                "desvio_relativo": round(((vezes - (total_numeros_sorteados / faixa)) / (total_numeros_sorteados / faixa)) * 100, 2) if total_numeros_sorteados > 0 else 0
+                "desvio_relativo": round(
+                    ((vezes - (total_numeros_sorteados / faixa)) / (total_numeros_sorteados / faixa)) * 100, 2
+                ) if total_numeros_sorteados > 0 else 0
             }
 
         return {
@@ -83,7 +85,9 @@ class AnalisadorBase:
                 "moda": int(Counter(somas).most_common(1)[0][0]) if somas else 0,
                 "variancia": round(float(np.var(somas_array, ddof=1)), 4),
                 "desvio_padrao": round(float(np.std(somas_array, ddof=1)), 4),
-                "coeficiente_variacao": round(float((np.std(somas_array, ddof=1) / np.mean(somas_array)) * 100), 2) if np.mean(somas_array) > 0 else 0,
+                "coeficiente_variacao": round(
+                    float((np.std(somas_array, ddof=1) / np.mean(somas_array)) * 100), 2
+                ) if np.mean(somas_array) > 0 else 0,
                 "minimo": int(np.min(somas_array)),
                 "maximo": int(np.max(somas_array)),
                 "amplitude": int(np.max(somas_array) - np.min(somas_array)),
@@ -116,7 +120,10 @@ class AnalisadorBase:
         dp = np.std(dados, ddof=1)
         if dp == 0:
             return 0
-        return float(((n * (n+1)) / ((n-1) * (n-2) * (n-3))) * np.sum(((dados - media) / dp) ** 4) - (3 * (n-1)**2) / ((n-2) * (n-3)))
+        return float(
+            ((n * (n+1)) / ((n-1) * (n-2) * (n-3))) * np.sum(((dados - media) / dp) ** 4)
+            - (3 * (n-1)**2) / ((n-2) * (n-3))
+        )
 
     # ========================================
     # ANALISES PROBABILISTICAS
@@ -135,7 +142,7 @@ class AnalisadorBase:
         minimo = config["min_num"]
         maximo = config["max_num"]
         faixa = maximo - minimo + 1
-        qtd_escolher = config["pick_count"]
+        config["pick_count"]
 
         # Probabilidade teorica uniforme
         prob_teorica = 1 / faixa
@@ -222,7 +229,9 @@ class AnalisadorBase:
                 "maximo": int(np.max(gaps_array)),
                 "atual": ultimo_indice - ultimo_visto.get(num, ultimo_indice),
                 "vezes_apareceu": len(lista_gaps) + 1,
-                "probabilidade_proximo": round(1 - (1 - 1/(config["max_num"] - config["min_num"] + 1)) ** (config["pick_count"]), 4)
+                "probabilidade_proximo": round(
+                    1 - (1 - 1/(config["max_num"] - config["min_num"] + 1)) ** (config["pick_count"]), 4
+                )
             }
 
             # Calcular se esta "atrasado"
@@ -270,10 +279,7 @@ class AnalisadorBase:
                 r = freq_recente.get(num, 0) / janela
                 o = freq_antiga.get(num, 0) / janela
 
-                if o > 0:
-                    variacao = ((r - o) / o) * 100
-                else:
-                    variacao = 100 if r > 0 else 0
+                variacao = (r - o) / o * 100 if o > 0 else 100 if r > 0 else 0
 
                 if variacao > 20:
                     em_alta.append({"numero": num, "variacao": round(variacao, 2)})
@@ -293,7 +299,7 @@ class AnalisadorBase:
     def analisar_sequencias(self, resultados: list, config: dict) -> dict:
         """Analisa padroes de sequencia e consecutivos"""
         consecutivos = Counter()
-        pares_consecutivos = Counter()
+        Counter()
         saltos = []
 
         for resultado in resultados:
@@ -320,7 +326,9 @@ class AnalisadorBase:
 
         return {
             "consecutivos": dict(consecutivos),
-            "probabilidade_consecutivo": round(sum(consecutivos.values()) / len(resultados) * 100, 2) if resultados else 0,
+            "probabilidade_consecutivo": round(
+                sum(consecutivos.values()) / len(resultados) * 100, 2
+            ) if resultados else 0,
             "saltos": {
                 "media": round(float(np.mean(saltos_array)), 2),
                 "mediana": round(float(np.median(saltos_array)), 2),
@@ -369,8 +377,12 @@ class AnalisadorBase:
         return {
             "quartis": {q: {"inicio": inf, "fim": sup} for q, (inf, sup) in quartis.items()},
             "contagem_absoluta": dict(contagem_quartis),
-            "contagem_relativa": {q: round(c/total_numeros*100, 2) for q, c in contagem_quartis.items()} if total_numeros > 0 else {},
-            "distribuicoes_mais_comuns": [(json.loads(d), f, round(f/len(resultados)*100, 2)) for d, f in freq_distribuicoes.most_common(5)]
+            "contagem_relativa": {
+                q: round(c/total_numeros*100, 2) for q, c in contagem_quartis.items()
+            } if total_numeros > 0 else {},
+            "distribuicoes_mais_comuns": [
+                (json.loads(d), f, round(f/len(resultados)*100, 2)) for d, f in freq_distribuicoes.most_common(5)
+            ]
         }
 
     def analisar_paridade(self, resultados: list, config: dict) -> dict:
@@ -386,7 +398,9 @@ class AnalisadorBase:
         contagem_padroes = Counter(json.dumps(p, sort_keys=True) for p in padroes_paridade)
 
         return {
-            "padroes_mais_comuns": [(json.loads(p), f, round(f/len(resultados)*100, 2)) for p, f in contagem_padroes.most_common(5)],
+            "padroes_mais_comuns": [
+                (json.loads(p), f, round(f/len(resultados)*100, 2)) for p, f in contagem_padroes.most_common(5)
+            ],
             "media_pares": round(np.mean([p["pares"] for p in padroes_paridade]), 2),
             "media_impares": round(np.mean([p["impares"] for p in padroes_paridade]), 2)
         }
@@ -465,7 +479,7 @@ class AnalisadorBase:
 
         sugestoes = []
 
-        for i in range(quantidade):
+        for _i in range(quantidade):
             # Estrategias variadas
             estrategia = np.random.choice(["elite", "balanceada", "diversificada", "conservadora", "ousada"])
 
@@ -502,8 +516,16 @@ class AnalisadorBase:
 
             elif estrategia == "ousada":
                 # Focada em numeros atrasados e em alta
-                candidatos = list(set(tier_s[:10] + [n for n, p in numeros_ordenados if pontuacoes[n]["pontuacao_total"] > 40]))
-                numeros = list(np.random.choice(candidatos[:20], min(config["pick_count"], min(20, len(candidatos))), replace=False))
+                candidatos = list(
+                    set(tier_s[:10] + [n for n, p in numeros_ordenados if pontuacoes[n]["pontuacao_total"] > 40])
+                )
+                numeros = list(
+                    np.random.choice(
+                        candidatos[:20],
+                        min(config["pick_count"], min(20, len(candidatos))),
+                        replace=False
+                    )
+                )
 
             # Preencher se necessario
             while len(numeros) < config["pick_count"]:
@@ -559,7 +581,7 @@ class AnalisadorBase:
 
         # 2. Analise de tendencia (0-20 pontos)
         em_alta_total = []
-        for janela, dados in stats.get("tendencias", {}).items():
+        for _janela, dados in stats.get("tendencias", {}).items():
             em_alta_total.extend([item["numero"] for item in dados.get("em_alta", [])])
         qtd_tendencia = sum(1 for n in numeros if n in em_alta_total)
         pontos_tend = min(20, qtd_tendencia * 5)
@@ -674,7 +696,7 @@ class AnalisadorBase:
             motivos.append(f"{qtd_quentes} numeros entre os mais frequentes")
 
         em_alta_total = []
-        for janela, dados in (tendencias or {}).items():
+        for _janela, dados in (tendencias or {}).items():
             em_alta_total.extend(item["numero"] for item in dados.get("em_alta", []))
         qtd_tendencia = sum(1 for n in numeros if n in em_alta_total)
         if qtd_tendencia >= 2:

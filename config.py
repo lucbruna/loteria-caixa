@@ -1,6 +1,7 @@
 """
 Configurações do Sistema de Loterias
 """
+import contextlib
 import os
 import sys
 
@@ -170,7 +171,6 @@ aplicar_seed()
 
 # Garante saida UTF-8 mesmo em consoles Windows (cp1252), evitando que
 # prints com emojis quebrem a aplicacao (ex.: /api/ultra e o menu).
-import contextlib
 
 with contextlib.suppress(Exception):
     if hasattr(sys.stdout, "reconfigure"):

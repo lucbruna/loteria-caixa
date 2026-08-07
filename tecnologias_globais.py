@@ -21,7 +21,7 @@ class TecnologiasGlobais:
         """
         Formula de Lottery Mathematics (Wikipedia)
         Calcula probabilidade de M acertos
-        
+
         P = total de bolas na pool
         W = bolas sorteadas
         T = bolas no bilhete
@@ -57,7 +57,6 @@ class TecnologiasGlobais:
         total = math.comb(p, w)
 
         # Para garantir 1 acerto, precisa de todas as combinacoes
-        bilhetes_para_1_acerto = total
 
         # Para cobertura parcial (aproximacao)
         cobertura_parcial = math.ceil(total * 0.01)  # 1% das combinacoes

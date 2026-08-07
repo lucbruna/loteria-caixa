@@ -13,7 +13,7 @@ from collections import Counter
 import numpy as np
 
 from config import LOTTERIES
-from funcionalidades_avancadas import FuncionalidadesAvancadas as FA
+from funcionalidades_avancadas import FuncionalidadesAvancadas
 
 
 def _fake_resultados(n=150, seed=3):
@@ -28,7 +28,7 @@ def test_ensemble_freq_usa_nucleo_base():
     res = _fake_resultados()
     nums = [3, 7, 12, 23, 41, 58]
 
-    out = FA.ensemble_scorer_avancado(nums, res, cfg)
+    out = FuncionalidadesAvancadas.ensemble_scorer_avancado(nums, res, cfg)
 
     # Replica o calculo inline original para comparar
     historico = Counter()
@@ -46,7 +46,7 @@ def test_ensemble_freq_usa_nucleo_base():
 def test_gerar_jogos_inteligentes():
     cfg = LOTTERIES["megasena"]
     res = _fake_resultados()
-    jogos = FA.gerar_jogos_inteligentes(res, cfg, 5)
+    jogos = FuncionalidadesAvancadas.gerar_jogos_inteligentes(res, cfg, 5)
     assert len(jogos) == 5
     for j in jogos:
         assert len(j["numeros"]) == cfg["pick_count"]
@@ -56,9 +56,9 @@ def test_gerar_jogos_inteligentes():
 def test_backtest_auto_tune_wheeling():
     cfg = LOTTERIES["megasena"]
     res = _fake_resultados()
-    bt = FA.backtest_walk_forward(res, cfg, 50)
+    bt = FuncionalidadesAvancadas.backtest_walk_forward(res, cfg, 50)
     assert "vantagem_percentual" in bt
-    at = FA.auto_tune(res, cfg)
+    at = FuncionalidadesAvancadas.auto_tune(res, cfg)
     assert at["melhor_config"] is not None
-    wh = FA.wheeling_otimizado(list(range(1, 21)), 5, cfg)
+    wh = FuncionalidadesAvancadas.wheeling_otimizado(list(range(1, 21)), 5, cfg)
     assert wh["qtd_jogos"] == 5

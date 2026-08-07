@@ -28,7 +28,6 @@ from config import (
 )
 from prediction_storage import (
     _load,
-    _ultimo_concurso,
     obter_estatisticas,
     obter_predicoes,
     salvar_predicoes,
@@ -292,9 +291,13 @@ def gerar_combinacoes(lottery, quantidade):
         elif estrategia == "tendencia" and pool_em_alta:
             base = [int(x) for x in np.random.choice(pool_em_alta, min(qtd_escolher, len(pool_em_alta)), replace=False)]
         elif estrategia == "atrasado" and pool_atrasados:
-            base = [int(x) for x in np.random.choice(pool_atrasados, min(qtd_escolher, len(pool_atrasados)), replace=False)]
+            base = [int(x) for x in np.random.choice(
+                pool_atrasados, min(qtd_escolher, len(pool_atrasados)), replace=False
+            )]
         elif estrategia == "misto" and pool_principal:
-            base = [int(x) for x in np.random.choice(pool_principal, min(qtd_escolher, len(pool_principal)), replace=False)]
+            base = [int(x) for x in np.random.choice(
+                pool_principal, min(qtd_escolher, len(pool_principal)), replace=False
+            )]
         else:
             base = []
 
@@ -310,8 +313,12 @@ def gerar_combinacoes(lottery, quantidade):
 
         if chave not in vistas:
             vistas.add(chave)
-            confianca = analisador._calcular_confianca(base, stats["frequencia"], stats["conjunta"]["pares"], stats.get("intervalos", {}))
-            motivos = analisador._gerar_motivos(base, stats["frequencia"], stats.get("tendencias", {}), stats.get("intervalos", {}))
+            confianca = analisador._calcular_confianca(
+                base, stats["frequencia"], stats["conjunta"]["pares"], stats.get("intervalos", {})
+            )
+            motivos = analisador._gerar_motivos(
+                base, stats["frequencia"], stats.get("tendencias", {}), stats.get("intervalos", {})
+            )
 
             combinacoes.append({
                 "numeros": base,
@@ -336,7 +343,7 @@ def api_obter_estatisticas(lottery):
     if lottery not in LOTTERIES:
         return jsonify({"erro": "Loteria nao encontrada"}), 404
 
-    config = LOTTERIES[lottery]
+    LOTTERIES[lottery]
     resultados, stats = obter_dados(lottery, 100)
 
     if not resultados:
@@ -361,7 +368,11 @@ def calculadora_apostas():
         # Calcular custos para diferentes quantidades
         for qtd in range(config["pick_count"], min(config["pick_count"] + 10, 16)):
             from math import comb
-            num_combinacoes = comb(config["max_num"] - config["min_num"] + 1, qtd) if qtd <= (config["max_num"] - config["min_num"] + 1) else 0
+            num_combinacoes = (
+                comb(config["max_num"] - config["min_num"] + 1, qtd)
+                if qtd <= (config["max_num"] - config["min_num"] + 1)
+                else 0
+            )
             custo_total = num_combinacoes * custo
             calculos[chave]["combinacoes"][qtd] = {
                 "qtd_numeros": qtd,
@@ -1035,8 +1046,14 @@ def api_criar_simulacao():
         combinacoes = gerar_combinacoes_ia(resultados, config, quantidade, stats)
         sugestoes = combinacoes.get("combinacoes", [])
         salvar_predicoes(lottery, "Combinacoes", sugestoes, config)
-    elif metodo in ("lstm", "qlearning", "fuzzy", "chaos", "wavelet", "kmeans", "pca", "bayesian", "stacking", "fractal"):
-        return jsonify({"erro": "Use a aba Analise Avancada para essas tecnologias", "metodo": metodo, "rota": "/api/tecnologia/" + lottery + "/" + metodo}), 400
+    elif metodo in (
+        "lstm", "qlearning", "fuzzy", "chaos", "wavelet", "kmeans", "pca", "bayesian", "stacking", "fractal"
+    ):
+        return jsonify({
+            "erro": "Use a aba Analise Avancada para essas tecnologias",
+            "metodo": metodo,
+            "rota": "/api/tecnologia/" + lottery + "/" + metodo
+        }), 400
     else:
         return jsonify({"erro": "Metodo nao reconhecido"}), 400
 
@@ -1056,8 +1073,9 @@ def api_criar_simulacao():
 
 def gerar_combinacoes_ia(resultados, config, quantidade, stats):
     """Gera combinacoes de IA para simulacao"""
-    import numpy as np
     from collections import Counter
+
+    import numpy as np
     minimo = config["min_num"]
     maximo_num = config["max_num"]
     qtd_escolher = config["pick_count"]
@@ -1162,7 +1180,11 @@ def api_evolucao_acertos():
         for concurso in sorted(concursos.keys()):
             acertos = concursos[concurso]
             media = sum(acertos) / len(acertos) if acertos else 0
-            evolucao[fonte].append({"concurso": concurso, "media_acertos": round(media, 2), "total_jogos": len(acertos)})
+            evolucao[fonte].append({
+                "concurso": concurso,
+                "media_acertos": round(media, 2),
+                "total_jogos": len(acertos)
+            })
 
     return jsonify(evolucao)
 
@@ -1206,7 +1228,7 @@ def api_performance_tipos():
                 resultado[fonte]["max_acertos"] = max(resultado[fonte]["max_acertos"], v.get("acertos", 0))
 
     # Calcular media
-    for fonte, stats in resultado.items():
+    for _fonte, stats in resultado.items():
         total_v = stats["total_verificadas"]
         stats["media_acertos"] = round(stats["total_acertos"] / total_v, 2) if total_v > 0 else 0
 
@@ -1311,7 +1333,7 @@ def api_exportar_simulacoes():
         response=conteudo,
         status=200,
         mimetype=mime,
-        headers={"Content-Disposition": "attachment; filename=simulacoes.{}.{}".format(formato, extensao)}
+        headers={"Content-Disposition": f"attachment; filename=simulacoes.{formato}.{extensao}"}
     )
     return resp
 
@@ -1390,8 +1412,8 @@ def monte_carlo_simulation(lottery):
     qtd_sorteados = config["pick_count"]
 
     def _calc():
-        from random import sample, seed
         from collections import Counter
+        from random import sample, seed
         seed(42)
 
         numeros_historicos = set()
@@ -1454,9 +1476,18 @@ def monte_carlo_simulation(lottery):
             "iteracoes": 3000,
             "ultimos_concursos_analisados": 20,
             "resultados": {
-                "aleatorio": {"media_acertos": round(sum(acertos_aleatorio) / len(acertos_aleatorio), 2), "max_acertos": max(acertos_aleatorio)},
-                "frequencia": {"media_acertos": round(sum(acertos_frequencia) / len(acertos_frequencia), 2), "max_acertos": max(acertos_frequencia)},
-                "ia": {"media_acertos": round(sum(acertos_ia) / len(acertos_ia), 2), "max_acertos": max(acertos_ia)}
+                "aleatorio": {
+                    "media_acertos": round(sum(acertos_aleatorio) / len(acertos_aleatorio), 2),
+                    "max_acertos": max(acertos_aleatorio)
+                },
+                "frequencia": {
+                    "media_acertos": round(sum(acertos_frequencia) / len(acertos_frequencia), 2),
+                    "max_acertos": max(acertos_frequencia)
+                },
+                "ia": {
+                    "media_acertos": round(sum(acertos_ia) / len(acertos_ia), 2),
+                    "max_acertos": max(acertos_ia)
+                }
             },
             "melhor_estrategia": melhor[0]
         }
@@ -1481,8 +1512,8 @@ def bias_detector(lottery):
     qtd_sorteados = config["pick_count"]
 
     def _calc():
-        from collections import Counter
         import math
+        from collections import Counter
 
         freq = Counter()
         for concurso in resultados:
@@ -1499,7 +1530,7 @@ def bias_detector(lottery):
         n = len(observadas)
         cdf_obs = [i / n for i in range(1, n + 1)]
         cdf_exp = [min(1.0, (f / esperado_per_num)) for f in observadas]
-        ks_stat = max(abs(a - b) for a, b in zip(cdf_obs, cdf_exp)) if freq else 0
+        ks_stat = max(abs(a - b) for a, b in zip(cdf_obs, cdf_exp, strict=False)) if freq else 0
 
         media_freq = sum(freq.values()) / len(freq) if freq else 0
         desvio = math.sqrt(sum((f - media_freq) ** 2 for f in freq.values()) / len(freq)) if freq else 0
@@ -1519,7 +1550,9 @@ def bias_detector(lottery):
             "numero_total_numeros": total_numeros,
             "chisquare": round(chi2, 2),
             "chisq_ratio": round(chisq_ratio, 3),
-            "interpretacao": "Uniforme" if chisq_ratio < 2.0 else "Leve viés" if chisq_ratio < 4.0 else "Viés detectado",
+            "interpretacao": (
+                "Uniforme" if chisq_ratio < 2.0 else "Leve viés" if chisq_ratio < 4.0 else "Viés detectado"
+            ),
             "graus_liberdade": gl,
             "ks_statistic": round(ks_stat, 4),
             "entropia": round(entropy, 3),

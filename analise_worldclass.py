@@ -6,11 +6,12 @@ Analise World-Class - Top 4 Tecnicas de Alto Impacto
 4. Ajuste de Distribuicao (Poisson, Geometrica, Binomial Negativa)
 """
 import warnings
-warnings.filterwarnings("ignore")
+from collections import Counter
 
 import numpy as np
 from scipy import stats as sp_stats
-from collections import Counter
+
+warnings.filterwarnings("ignore")
 
 
 class AnaliseWorldClass:
@@ -28,7 +29,7 @@ class AnaliseWorldClass:
         if n < janela + 5:
             return None, None, None
 
-        X, y = [], []
+        x, y = [], []
 
         for i in range(janela, n):
             janela_anterior = resultados[i - janela:i]
@@ -45,22 +46,27 @@ class AnaliseWorldClass:
                     sum(1 for d in janela_anterior[-5:] if num in d) / 5,
                 ])
 
-            X.append(features)
+            x.append(features)
             y.append([1 if num in resultados[i] else 0 for num in range(self.min_num, self.max_num + 1)])
 
-        return np.array(X), np.array(y), list(range(self.min_num, self.max_num + 1))
+        return np.array(x), np.array(y), list(range(self.min_num, self.max_num + 1))
 
     def regressao_logistica(self, resultados: list[list[int]], janela: int = 10):
         """Regressao Logistica Regularizada (L1/L2/ElasticNet)."""
         from sklearn.linear_model import LogisticRegression
         from sklearn.preprocessing import StandardScaler
 
-        X, y, numeros = self._preparar_features(resultados, janela)
-        if X is None or len(X) < 20:
-            return {"metodo": "regressao_logistica", "probabilidades": {}, "top_numeros": [], "erro": "Dados insuficientes"}
+        x, y, numeros = self._preparar_features(resultados, janela)
+        if x is None or len(x) < 20:
+            return {
+                "metodo": "regressao_logistica",
+                "probabilidades": {},
+                "top_numeros": [],
+                "erro": "Dados insuficientes",
+            }
 
         scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
+        x_scaled = scaler.fit_transform(x)
 
         probabilidades = {}
         for i, num in enumerate(numeros):
@@ -69,8 +75,8 @@ class AnaliseWorldClass:
                     penalty="elasticnet", solver="saga",
                     l1_ratio=0.5, C=1.0, max_iter=500, random_state=42
                 )
-                modelo.fit(X_scaled, y[:, i])
-                prob = modelo.predict_proba(X_scaled[-1:])
+                modelo.fit(x_scaled, y[:, i])
+                prob = modelo.predict_proba(x_scaled[-1:])
                 probabilidades[num] = float(prob[0][1])
             except Exception:
                 probabilidades[num] = y[:, i].mean()
@@ -85,17 +91,16 @@ class AnaliseWorldClass:
             "probabilidades": {str(k): round(v, 6) for k, v in probabilidades.items()},
             "top_numeros": [{"numero": k, "probabilidade": round(v, 6)} for k, v in top],
             "janela": janela,
-            "amostras_treino": len(X),
+            "amostras_treino": len(x),
         }
 
     def arima_simplificado(self, resultados: list[list[int]], ordem: tuple = (2, 1, 1)):
         """ARIMA para cada numero - previsao de aparecimento."""
-        from statsmodels.tsa.arima.model import ARIMA as ARIMA_Model
+        from statsmodels.tsa.arima.model import ARIMA
         from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
         numeracao = list(range(self.min_num, self.max_num + 1))
         probabilidades = {}
-        previsoes = {}
 
         for num in numeracao:
             serie = np.array([1 if num in d else 0 for d in resultados], dtype=float)
@@ -104,7 +109,7 @@ class AnaliseWorldClass:
                 continue
 
             try:
-                modelo = ARIMA_Model(serie, order=ordem)
+                modelo = ARIMA(serie, order=ordem)
                 ajuste = modelo.fit()
                 pred = ajuste.forecast(steps=1)
                 probabilidades[num] = float(np.clip(pred[0], 0, 1))
@@ -141,12 +146,17 @@ class AnaliseWorldClass:
         from sklearn.ensemble import GradientBoostingClassifier
         from sklearn.preprocessing import StandardScaler
 
-        X, y, numeros = self._preparar_features(resultados, janela)
-        if X is None or len(X) < 30:
-            return {"metodo": "gradient_boosting", "probabilidades": {}, "top_numeros": [], "erro": "Dados insuficientes"}
+        x, y, numeros = self._preparar_features(resultados, janela)
+        if x is None or len(x) < 30:
+            return {
+                "metodo": "gradient_boosting",
+                "probabilidades": {},
+                "top_numeros": [],
+                "erro": "Dados insuficientes",
+            }
 
         scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
+        x_scaled = scaler.fit_transform(x)
 
         probabilidades = {}
         importancias = {}
@@ -156,8 +166,8 @@ class AnaliseWorldClass:
                     n_estimators=100, max_depth=4, learning_rate=0.1,
                     subsample=0.8, random_state=42
                 )
-                modelo.fit(X_scaled, y[:, i])
-                prob = modelo.predict_proba(X_scaled[-1:])
+                modelo.fit(x_scaled, y[:, i])
+                prob = modelo.predict_proba(x_scaled[-1:])
                 probabilidades[num] = float(prob[0][1])
                 importancias[num] = float(modelo.feature_importances_.max())
             except Exception:
@@ -173,7 +183,7 @@ class AnaliseWorldClass:
             "top_numeros": [{"numero": k, "probabilidade": round(v, 6)} for k, v in top],
             "n_estimators": 100,
             "janela": janela,
-            "amostras_treino": len(X),
+            "amostras_treino": len(x),
         }
 
     def ajuste_distribuicao(self, resultados: list[list[int]]):

@@ -166,7 +166,7 @@ class FuncionalidadesAvancadas:
         pares_count = 0
         for i, n1 in enumerate(numeros):
             for n2 in numeros[i+1:]:
-                par = tuple(sorted([n1, n2]))
+                tuple(sorted([n1, n2]))
                 # Buscar no historico
                 for r in resultados:
                     dezenas = sorted([int(d) for d in r.get("listaDezenas", [])])
@@ -232,8 +232,8 @@ class FuncionalidadesAvancadas:
         """
         Wheeling otimizado com selecao inteligente
         """
-        minimo = config["min_num"]
-        maximo = config["max_num"]
+        config["min_num"]
+        config["max_num"]
         qtd_escolher = config["pick_count"]
 
         if len(base_numeros) < qtd_escolher:
@@ -304,9 +304,9 @@ class FuncionalidadesAvancadas:
         """
         Auto-tune: encontra os melhores parametros para geracao de numeros
         """
-        minimo = config["min_num"]
-        maximo = config["max_num"]
-        qtd_escolher = config["pick_count"]
+        config["min_num"]
+        config["max_num"]
+        config["pick_count"]
 
         if len(resultados) < 30:
             return {"erro": "Dados insuficientes para auto-tune"}
@@ -424,7 +424,9 @@ class FuncionalidadesAvancadas:
             "graus_liberdade": gl,
             "p_valor": round(p_valor, 4),
             "significativo": p_valor < 0.05,
-            "interpretacao": "Distribuicao NAO e uniforme (p<0.05)" if p_valor < 0.05 else "Distribuicao pode ser uniforme"
+            "interpretacao": (
+                "Distribuicao NAO e uniforme (p<0.05)" if p_valor < 0.05 else "Distribuicao pode ser uniforme"
+            )
         }
 
     @staticmethod

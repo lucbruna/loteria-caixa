@@ -67,7 +67,7 @@ class AnalisadorUltraAvancado(AnalisadorBase):
 
         # Treinar "arvore" baseada em correlacoes
         pesos_features = np.zeros(len(features_anteriores[0]))
-        for i, (feat, label) in enumerate(zip(features_anteriores, labels)):
+        for _i, (_feat, label) in enumerate(zip(features_anteriores, labels, strict=False)):
             for num in label:
                 idx = num - config["min_num"]
                 if idx < len(pesos_features):
@@ -94,7 +94,7 @@ class AnalisadorUltraAvancado(AnalisadorBase):
         Naive Bayes para calcular probabilidade condicional
         P(numero | historico) = P(historico | numero) * P(numero) / P(historico)
         """
-        total_sorteios = len(resultados)
+        len(resultados)
         minimo = config["min_num"]
         maximo = config["max_num"]
 
@@ -217,7 +217,7 @@ class AnalisadorUltraAvancado(AnalisadorBase):
         n_numeros = maximo - minimo + 1
 
         # Preparar dados de treino
-        X_treino = []
+        x_treino = []
         y_treino = []
 
         janela = 5  # Usar 5 sorteios anteriores como input
@@ -240,22 +240,22 @@ class AnalisadorUltraAvancado(AnalisadorBase):
                 if d - minimo < len(saida):
                     saida[d - minimo] = 1
 
-            X_treino.append(entrada)
+            x_treino.append(entrada)
             y_treino.append(saida)
 
-        X_treino = np.array(X_treino)
+        x_treino = np.array(x_treino)
         y_treino = np.array(y_treino)
 
         # Rede neural simplificada (2 camadas)
-        n_entrada = X_treino.shape[1]
+        n_entrada = x_treino.shape[1]
         n_oculta = 64
         n_saida = y_treino.shape[1]
 
         # Inicializar pesos aleatoriamente
         np.random.seed(42)
-        W1 = np.random.randn(n_entrada, n_oculta) * 0.1
+        w1 = np.random.randn(n_entrada, n_oculta) * 0.1
         b1 = np.zeros(n_oculta)
-        W2 = np.random.randn(n_oculta, n_saida) * 0.1
+        w2 = np.random.randn(n_oculta, n_saida) * 0.1
         b2 = np.zeros(n_saida)
 
         # Funcao de ativacao
@@ -269,22 +269,22 @@ class AnalisadorUltraAvancado(AnalisadorBase):
         taxa_aprendizado = 0.1
         epocas = 100
 
-        for epoca in range(epocas):
+        for _epoca in range(epocas):
             # Forward pass
-            hidden = sigmoid(np.dot(X_treino, W1) + b1)
-            output = sigmoid(np.dot(hidden, W2) + b2)
+            hidden = sigmoid(np.dot(x_treino, w1) + b1)
+            output = sigmoid(np.dot(hidden, w2) + b2)
 
             # Backward pass
             erro_saida = y_treino - output
             delta_saida = erro_saida * sigmoid_derivada(output)
 
-            erro_hidden = delta_saida.dot(W2.T)
+            erro_hidden = delta_saida.dot(w2.T)
             delta_hidden = erro_hidden * sigmoid_derivada(hidden)
 
             # Atualizar pesos
-            W2 += hidden.T.dot(delta_saida) * taxa_aprendizado
+            w2 += hidden.T.dot(delta_saida) * taxa_aprendizado
             b2 += np.sum(delta_saida, axis=0) * taxa_aprendizado
-            W1 += X_treino.T.dot(delta_hidden) * taxa_aprendizado
+            w1 += x_treino.T.dot(delta_hidden) * taxa_aprendizado
             b1 += np.sum(delta_hidden, axis=0) * taxa_aprendizado
 
         # Prever proximos numeros
@@ -298,8 +298,8 @@ class AnalisadorUltraAvancado(AnalisadorBase):
             ultimo_input.extend(binario)
 
         ultimo_input = np.array([ultimo_input])
-        hidden = sigmoid(np.dot(ultimo_input, W1) + b1)
-        previsao = sigmoid(np.dot(hidden, W2) + b2)[0]
+        hidden = sigmoid(np.dot(ultimo_input, w1) + b1)
+        previsao = sigmoid(np.dot(hidden, w2) + b2)[0]
 
         probabilidades = {}
         for i, prob in enumerate(previsao):
@@ -378,7 +378,7 @@ class AnalisadorUltraAvancado(AnalisadorBase):
 
         historico_fitness = []
 
-        for geracao in range(geracoes):
+        for _geracao in range(geracoes):
             # Avaliar fitness
             fitness_scores = [(ind, calcular_fitness(ind)) for ind in populacao]
             fitness_scores.sort(key=lambda x: x[1], reverse=True)
@@ -641,8 +641,11 @@ class AnalisadorUltraAvancado(AnalisadorBase):
             if len(magnitude) > 2:
                 picos = []
                 for i in range(1, len(magnitude) - 1):
-                    if magnitude[i] > magnitude[i-1] and magnitude[i] > magnitude[i+1]:
-                        if magnitude[i] > np.mean(magnitude) * 1.5:
+                    if (
+                        magnitude[i] > magnitude[i-1]
+                        and magnitude[i] > magnitude[i+1]
+                        and magnitude[i] > np.mean(magnitude) * 1.5
+                    ):
                             periodo = 1 / frequencias[i] if frequencias[i] != 0 else float('inf')
                             picos.append({
                                 "periodo": round(float(periodo), 2),
@@ -677,7 +680,7 @@ class AnalisadorUltraAvancado(AnalisadorBase):
             return {"erro": "Dados insuficientes para Gradient Boosting"}
 
         # Preparar dados com janela fixa de n_janela sorteios (features homogeneas)
-        X = []
+        x = []
         y = []
 
         for i in range(n_janela, len(resultados)):
@@ -695,28 +698,28 @@ class AnalisadorUltraAvancado(AnalisadorBase):
             dezenas_atual = [int(d) for d in resultados[i].get("listaDezenas", [])]
             label = [1 if n in dezenas_atual else 0 for n in range(minimo, min(minimo + 30, maximo + 1))]
 
-            X.append(features)
+            x.append(features)
             y.append(label)
 
-        X = np.array(X, dtype=float)
+        x = np.array(x, dtype=float)
         y = np.array(y, dtype=float)
 
         # Gradient Boosting simplificado
-        n_samples, n_features = X.shape
+        n_samples, n_features = x.shape
         n_classes = y.shape[1]
 
         # Inicializar previsoes
         previsoes = np.zeros((n_samples, n_classes))
         coeficientes = []
 
-        for t in range(n_arvores):
+        for _t in range(n_arvores):
             residuos = y - previsoes
             coefs_arvore = []
             for c in range(n_classes):
                 if n_features > 0 and n_samples > 0:
                     try:
-                        coef = np.linalg.lstsq(X, residuos[:, c], rcond=None)[0]
-                        previsoes[:, c] += 0.1 * X.dot(coef)
+                        coef = np.linalg.lstsq(x, residuos[:, c], rcond=None)[0]
+                        previsoes[:, c] += 0.1 * x.dot(coef)
                         coefs_arvore.append(coef)
                     except np.linalg.LinAlgError:
                         coefs_arvore.append(np.zeros(n_features))
@@ -725,7 +728,7 @@ class AnalisadorUltraAvancado(AnalisadorBase):
             coeficientes.append(coefs_arvore)
 
         # Prever para o proximo sorteio (usa os ultimos n_janela sorteios)
-        ultimo_X = np.zeros(n_features, dtype=float)
+        ultimo_x = np.zeros(n_features, dtype=float)
         for j in range(n_janela):
             idx = len(resultados) - n_janela + j
             binario = [0] * min(maximo - minimo + 1, 30)
@@ -733,13 +736,13 @@ class AnalisadorUltraAvancado(AnalisadorBase):
             for d in dezenas:
                 if d - minimo < len(binario):
                     binario[d - minimo] = 1
-            ultimo_X[j * len(binario):(j + 1) * len(binario)] = binario
+            ultimo_x[j * len(binario):(j + 1) * len(binario)] = binario
 
-        # Aplicar todas as arvores ao ultimo_X
+        # Aplicar todas as arvores ao ultimo_x
         pred_final = np.zeros(n_classes)
         for coefs_arvore in coeficientes:
             for c in range(n_classes):
-                pred_final[c] += 0.1 * np.dot(ultimo_X, coefs_arvore[c])
+                pred_final[c] += 0.1 * np.dot(ultimo_x, coefs_arvore[c])
 
         probabilidades = {}
         for c in range(n_classes):
@@ -768,7 +771,7 @@ class AnalisadorUltraAvancado(AnalisadorBase):
         maximo = config["max_num"]
 
         # Construir grafo de dependencias
-        dependencias = defaultdict(list)
+        defaultdict(list)
 
         # Analisar co-ocorrencias
         co_ocorrencias = Counter()
@@ -808,10 +811,7 @@ class AnalisadorUltraAvancado(AnalisadorBase):
                     influencia_pais += p_conjunta / p_pai
 
             # Probabilidade final
-            if pais:
-                p_final = p_marginal * (1 + influencia_pais / len(pais))
-            else:
-                p_final = p_marginal
+            p_final = p_marginal * (1 + influencia_pais / len(pais)) if pais else p_marginal
 
             probabilidades[num] = {
                 "probabilidade": round(p_final * 100, 4),
@@ -823,7 +823,11 @@ class AnalisadorUltraAvancado(AnalisadorBase):
             "algoritmo": "Rede Bayesiana",
             "probabilidades": {k: v["probabilidade"] for k, v in probabilidades.items()},
             "detalhes": probabilidades,
-            "top_numeros": sorted([(k, v["probabilidade"]) for k, v in probabilidades.items()], key=lambda x: x[1], reverse=True)[:15]
+            "top_numeros": sorted(
+                [(k, v["probabilidade"]) for k, v in probabilidades.items()],
+                key=lambda x: x[1],
+                reverse=True
+            )[:15]
         }
 
     # ========================================
@@ -854,7 +858,7 @@ class AnalisadorUltraAvancado(AnalisadorBase):
         mk = self.cadeia_markov(resultados, config)
 
         print("Executando Entropia...")
-        ent = self.analise_entropia(resultados, config)
+        self.analise_entropia(resultados, config)
 
         print("Executando Gradient Boosting...")
         gb = self.gradient_boosting_simplificado(resultados, config)
@@ -929,7 +933,10 @@ class AnalisadorUltraAvancado(AnalisadorBase):
 
             # World-Class Ensemble
             if "probabilidades_finais" in wc:
-                soma_ponderada += wc["probabilidades_finais"].get(str(num), wc["probabilidades_finais"].get(num, 0)) * pesos["wc"]
+                soma_ponderada += (
+                    wc["probabilidades_finais"].get(str(num), wc["probabilidades_finais"].get(num, 0))
+                    * pesos["wc"]
+                )
 
             probabilidades_finais[num] = round(soma_ponderada, 4)
 
