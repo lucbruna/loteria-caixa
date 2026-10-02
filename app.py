@@ -13,6 +13,7 @@ import numpy as np
 from flask import Flask, jsonify, request, send_from_directory
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 from analyzer import AnalisadorLoteriasAvancado as AnalisadorLoterias
 from analyzer_global import AnalisadorGlobal
@@ -22,6 +23,7 @@ from config import (
     BASE_DIR,
     CACHE_TTL_DATA,
     CACHE_TTL_ULTIMO,
+    DATA_DIR,
     FLASK_DEBUG,
     FLASK_HOST,
     FLASK_PORT,
@@ -41,15 +43,38 @@ CORS(app)
 
 logger_erros = logging.getLogger("loteria_federal")
 if not logger_erros.handlers:
-    _file_handler = logging.FileHandler("loteria_federal_errors.log", encoding="utf-8")
+    # Caminho ABSOLUTO em DATA_DIR (APPDATA quando congelado). Um caminho
+    # relativo resolveria para o CWD, que no .exe instalado e a pasta de
+    # instalacao em "Program Files" (somente-leitura para usuario normal) ->
+    # PermissionError no import e o app morre antes do Flask subir.
+    _log_path = os.path.join(DATA_DIR, "loteria_federal_errors.log")
+    try:
+        _file_handler = logging.FileHandler(_log_path, encoding="utf-8")
+    except OSError:
+        # Logging nunca deve derrubar a aplicacao; cai para stderr/console.
+        _file_handler = logging.StreamHandler()
     _file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
     logger_erros.addHandler(_file_handler)
+
+
+@app.errorhandler(HTTPException)
+def handle_http_exception(e):
+    """Mantem o status HTTP correto (404, 405, etc.) em vez de cair no handler
+    generico de Exception, que converte tudo em 500."""
+    return e
 
 
 @app.errorhandler(Exception)
 def handle_erro_interno(e):
     logger_erros.error("Excecao nao tratada:\n" + traceback.format_exc())
     return jsonify({"erro": "Erro interno do servidor"}), 500
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        os.path.join(BASE_DIR, "static"), "favicon.ico", mimetype="image/x-icon"
+    )
 
 
 @app.after_request
