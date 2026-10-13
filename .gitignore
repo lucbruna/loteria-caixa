@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.spec
+# ...mas o spec de build do projeto e versionado de proposito
+!LoteriaFederal.spec
 
 # Build artifacts (binarios gerados pelo PyInstaller / Inno Setup)
 build/

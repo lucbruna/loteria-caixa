@@ -1,4 +1,4 @@
-.PHONY: audit predict report drift test install build-nsis
+.PHONY: audit predict report drift test install build build-exe installer build-nsis
 
 audit:
 	python cli/run_audit.py
@@ -14,6 +14,18 @@ drift:
 
 test:
 	python -m pytest -q 2>/dev/null || echo "pytest not configured"
+
+# Windows: gera os .exe + o instalador Inno Setup (ver build.ps1)
+build:
+	powershell -ExecutionPolicy Bypass -File ./build.ps1
+
+# Apenas os executaveis (PyInstaller)
+build-exe:
+	python -m PyInstaller --noconfirm --clean LoteriaFederal.spec
+
+# Apenas o instalador (usa os .exe ja presentes em dist/)
+installer:
+	powershell -ExecutionPolicy Bypass -File ./build.ps1 -SkipExe
 
 build-nsis:
 	makensis install.nsi 2>/dev/null || echo "NSIS not found in PATH"
