@@ -1,0 +1,95 @@
+name: Build Release
+
+# Dispara em cada release publicado: rebuilda os executaveis e o instalador
+# e anexa os assets ao proprio release. O nome/versao sao derivados da tag
+# do release (ex.: v1.2.3 -> LoteriaFederal-Setup-1.2.3.exe / versao 1.2.3.0),
+# sem necessidade de editar os arquivos manualmente.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows (.exe + Installer)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install pyinstaller
+
+      - name: Lint with ruff
+        run: ruff check . --output-format=github
+
+      - name: Compute version from tag
+        shell: pwsh
+        run: |
+          $tag = "${{ github.event.release.tag_name }}"
+          $ver = $tag.TrimStart('v')
+          $ver4 = "$ver.0"
+          Add-Content -Path $env:GITHUB_ENV -Value "VERSION=$ver"
+          Add-Content -Path $env:GITHUB_ENV -Value "VERSION4=$ver4"
+          Add-Content -Path $env:GITHUB_ENV -Value "INSTALLER=LoteriaFederal-Setup-$ver.exe"
+
+      - name: Patch version into build files
+        shell: pwsh
+        run: |
+          $ver = "${{ env.VERSION }}"
+          $ver4 = "${{ env.VERSION4 }}"
+          $fvi = ($ver4.Split('.')) -join ', '
+          # version_info.txt
+          $vi = Get-Content version_info.txt -Raw
+          $vi = $vi -replace 'filevers=\(\d+,\s*\d+,\s*\d+,\s*\d+\)', "filevers=($fvi)"
+          $vi = $vi -replace 'prodvers=\(\d+,\s*\d+,\s*\d+,\s*\d+\)', "prodvers=($fvi)"
+          $vi = $vi -replace "u'FileVersion', u'[\d.]+'", "u'FileVersion', u'$ver4'"
+          $vi = $vi -replace "u'ProductVersion', u'[\d.]+'", "u'ProductVersion', u'$ver4'"
+          Set-Content version_info.txt $vi
+          # LoteriaFederal.iss (o #define MyAppVersion alimenta AppVersion,
+          # VersionInfoVersion e OutputBaseFilename automaticamente)
+          $iss = Get-Content LoteriaFederal.iss -Raw
+          $iss = $iss -replace '#define MyAppVersion "[\d.]+"', "#define MyAppVersion `"$ver`""
+          Set-Content LoteriaFederal.iss $iss
+          Write-Host "Version set to $ver (filevers $fvi)"
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Build dashboard executable
+        run:           pyinstaller --onefile --name LoteriaFederal --version-file version_info.txt --icon "Distribuicao\icon.ico" --add-data "static;static" --hidden-import flask_cors --hidden-import numpy --hidden-import loterias_mundiais --hidden-import tecnologias_globais --hidden-import tecnologias_adicionais --hidden-import funcionalidades_avancadas --hidden-import prediction_storage --hidden-import tecnologias_ml --hidden-import sklearn --collect-binaries sklearn --hidden-import scipy --collect-binaries scipy --hidden-import statsmodels --collect-binaries statsmodels --collect-data statsmodels --hidden-import xgboost --collect-binaries xgboost --collect-data xgboost --hidden-import lightgbm --collect-binaries lightgbm --exclude-module torch run_server.py
+
+      - name: Build console (menu) executable
+        run:           pyinstaller --onefile --console --name LoteriaFederal-Console --icon "Distribuicao\icon_menu.ico" --add-data "static;static" --hidden-import flask_cors --hidden-import numpy --hidden-import loterias_mundiais --hidden-import tecnologias_globais --hidden-import tecnologias_adicionais --hidden-import funcionalidades_avancadas --hidden-import prediction_storage --hidden-import tecnologias_ml --hidden-import sklearn --collect-binaries sklearn --hidden-import scipy --collect-binaries scipy --hidden-import statsmodels --collect-binaries statsmodels --collect-data statsmodels --hidden-import xgboost --collect-binaries xgboost --collect-data xgboost --hidden-import lightgbm --collect-binaries lightgbm --exclude-module torch main.py
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+          if (-not $iscc) { $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" }
+          & $iscc LoteriaFederal.iss
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist_installer/${{ env.INSTALLER }}
+            dist/LoteriaFederal.exe
+            dist/LoteriaFederal-Console.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

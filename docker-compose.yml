@@ -1,0 +1,17 @@
+services:
+  loteria-federal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+      - FLASK_DEBUG=False
+      - AI_SEED=
+    volumes:
+      - data:/app/data
+
+volumes:
+  data:

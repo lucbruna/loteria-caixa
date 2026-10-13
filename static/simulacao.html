@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulacao de Jogos - Loteria Federal IA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        .background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 80%, rgba(120, 0, 255, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 170, 0.08) 0%, transparent 50%);
+            z-index: -1;
+        }
+        .cabecalho {
+            background: linear-gradient(135deg, rgba(26, 26, 62, 0.98) 0%, rgba(17, 17, 40, 0.99) 100%);
+            border-bottom: 1px solid #2a2a5a;
+            padding: 1rem 2rem;
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+        .conteudo-cabecalho {
+            max-width: 1400px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo h1 { font-size: 1.3rem; background: linear-gradient(90deg, #00d4aa, #a855f7);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .logo span { font-size: 0.8rem; color: #888; }
+        .nav-links { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .nav-link {
+            padding: 8px 16px; background: rgba(255,255,255,0.06);
+            color: #ccc; border: 1px solid #2a2a5a; border-radius: 8px;
+            cursor: pointer; font-size: 0.85em; transition: all 0.2s; text-decoration: none;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .nav-link.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-color: transparent; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .aba-navegacao { display: flex; gap: 8px; margin-bottom: 2rem; overflow-x: auto; padding-bottom: 8px; }
+        .aba {
+            padding: 12px 24px; background: #1a1a3e; border: 1px solid #2a2a5a;
+            border-radius: 10px; cursor: pointer; transition: all 0.3s; white-space: nowrap;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .aba:hover { background: #222255; border-color: #a855f7; }
+        .aba.ativa { background: linear-gradient(135deg, #667eea, #764ba2); border-color: transparent; color: #fff; }
+        .conteudo-aba { display: none; }
+        .conteudo-aba.ativo { display: block; }
+        .gradiente-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradiente-2 { background: linear-gradient(135deg, #00d4aa 0%, #0099cc 100%); }
+        .gradiente-3 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .card {
+            background: #1a1a3e; border: 1px solid #2a2a5a; border-radius: 16px; padding: 24px; margin-bottom: 1.5rem;
+        }
+        .card-titulo { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; color: #a855f7; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.85rem; color: #888; margin-bottom: 6px; }
+        .form-group select, .form-group input, .form-group textarea {
+            width: 100%; padding: 10px 14px; background: #0f0f2a; border: 1px solid #2a2a5a;
+            border-radius: 8px; color: #e0e0e0; font-size: 0.95rem;
+        }
+        .form-group select:focus, .form-group input:focus { outline: none; border-color: #a855f7; }
+        .btn {
+            padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer;
+            font-weight: 600; font-size: 0.95em; transition: all 0.3s;
+            display: inline-flex; align-items: center; gap: 8px; color: #fff;
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-primario { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-verde { background: linear-gradient(135deg, #00d4aa, #0099cc); }
+        .btn-vermelho { background: linear-gradient(135deg, #f5576c, #f093fb); }
+        .btn-amarelo { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .badge { padding: 3px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600; }
+        .badge-ok { background: rgba(0,212,170,0.2); color: #00d4aa; }
+        .badge-erro { background: rgba(255,107,107,0.2); color: #ff6b6b; }
+        .badge-pendente { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .badge-info { background: rgba(59,130,243,0.2); color: #60a5fa; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+        th { text-align: left; padding: 10px 12px; background: rgba(255,255,255,0.04);
+            color: #888; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
+        td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        .numero-bola {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; border-radius: 50%; font-size: 0.75em; font-weight: 600;
+            background: linear-gradient(135deg, #2a2a5a, #1a1a3e); border: 1px solid #2a2a5a;
+            margin: 1px;
+        }
+        .numero-bola.acerto { background: rgba(0,212,170,0.3); color: #00d4aa; border-color: rgba(0,212,170,0.5); }
+        .numero-bola.erro { background: rgba(255,107,107,0.15); color: #ff6b6b; border-color: rgba(255,107,107,0.3); }
+        .numero-bola.sorteado { background: rgba(255,193,7,0.25); color: #ffc107; border-color: rgba(255,193,7,0.4); }
+        .acerto-count { font-size: 1.3em; font-weight: 700; padding: 4px 12px; border-radius: 8px; }
+        .acerto-high { background: rgba(0,212,170,0.25); color: #00d4aa; }
+        .acerto-mid { background: rgba(0,212,170,0.15); color: #00d4aa; }
+        .acerto-low { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .acerto-miss { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+        .chart-container { position: relative; height: 300px; margin: 1rem 0; }
+        .chart-container canvas { width: 100% !important; }
+        .simulacao-card {
+            background: rgba(255,255,255,0.02); border: 1px solid #2a2a5a;
+            border-radius: 12px; padding: 16px; margin-bottom: 12px; transition: all 0.2s;
+        }
+        .simulacao-card:hover { border-color: #a855f7; background: rgba(168,85,247,0.05); }
+        .simulacao-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+        .simulacao-nome { font-weight: 700; font-size: 1rem; }
+        .simulacao-meta { display: flex; gap: 15px; font-size: 0.8em; color: #888; flex-wrap: wrap; }
+        .simulacao-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; margin-top: 10px; }
+        .loading { text-align: center; padding: 60px 20px; color: #888; }
+        .loading i { font-size: 2em; animation: spin 1s linear infinite; color: #00d4aa; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .progress-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #00d4aa, #0099cc); transition: width 0.5s; border-radius: 3px; }
+        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9em; }
+        .alert-success { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3); color: #00d4aa; }
+        .alert-warning { background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); color: #ffc107; }
+        .alert-error { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); color: #ff6b6b; }
+        .alert-info { background: rgba(59,130,243,0.1); border: 1px solid rgba(59,130,243,0.3); color: #60a5fa; }
+        .legenda { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 1rem; padding: 10px 14px;
+            background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.8em; }
+        .legenda-item { display: flex; align-items: center; gap: 6px; }
+        .legenda-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .filtros { display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+        .filtros select, .filtros input {
+            padding: 8px 12px; background: #0f0f2a; border: 1px solid #2a2a5a;
+            border-radius: 8px; color: #e0e0e0; font-size: 0.85em;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .grid { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .nav-links { gap: 8px; }
+            .nav-link { padding: 6px 10px; font-size: 0.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <header class="cabecalho">
+        <div class="conteudo-cabecalho">
+            <div class="logo">
+                <h1>Simulador de Jogos</h1>
+                <span>Loteria Federal IA</span>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="/resultados" class="nav-link"><i class="fas fa-chart-line"></i> Resultados</a>
+                <a href="/simulacao" class="nav-link active"><i class="fas fa-dice"></i> Simulacoes</a>
+                <a href="/backtest" class="nav-link"><i class="fas fa-history"></i> Backtest</a>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <div class="aba-navegacao">
+            <div class="aba ativa" onclick="mudarAba('nova')" id="aba-nova"><i class="fas fa-plus-circle"></i> Nova Simulacao</div>
+            <div class="aba" onclick="mudarAba('minhas')" id="aba-minhas"><i class="fas fa-list"></i> Minhas Simulacoes</div>
+            <div class="aba" onclick="mudarAba('graficos')" id="aba-graficos"><i class="fas fa-chart-area"></i> Graficos</div>
+            <div class="aba" onclick="mudarAba('comparar')" id="aba-comparar"><i class="fas fa-balance-scale"></i> Comparar</div>
+            <div class="aba" onclick="mudarAba('exportar')" id="aba-exportar"><i class="fas fa-file-export"></i> Exportar</div>
+        </div>
+
+        <!-- ABA: Nova Simulacao -->
+        <div id="aba-nova" class="conteudo-aba ativo">
+            <div class="card">
+                <div class="card-titulo"><i class="fas fa-plus-circle"></i> Nova Simulacao de Jogos</div>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Loteria</label>
+                        <select id="sim-loteria">
+                            <option value="lotofacil">Lotofacil (15 numeros)</option>
+                            <option value="megasena">Mega-Sena (6 numeros)</option>
+                            <option value="quina">Quina (5 numeros)</option>
+                            <option value="lotomania">Lotomania (20 numeros)</option>
+                            <option value="timemania">Timemania (10 numeros)</option>
+                            <option value="diadesorte">Dia de Sorte (7 numeros)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade de Jogos</label>
+                        <input type="number" id="sim-quantidade" value="10" min="1" max="10000">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome da Simulacao</label>
+                        <input type="text" id="sim-nome" placeholder="Ex: Lotofacil Concurso 3620" maxlength="100">
+                    </div>
+<div class="form-group">
+                        <label>Metodo de Geracao</label>
+                        <select id="sim-metodo">
+                            <option value="IA">IA Basica (Estatistica)</option>
+                            <option value="Ultra">Ultra IA (9 algoritmos ML)</option>
+                            <option value="Global">Analise Global Mundial</option>
+                            <option value="Combinacoes">Combinacoes Inteligentes</option>
+                            <option value="lstm">LSTM (Rede Neural Sequencial)</option>
+                            <option value="qlearning">Q-Learning (Reinforcement Learning)</option>
+                            <option value="fuzzy">Logica Fuzzy</option>
+                            <option value="chaos">Teoria do Caos</option>
+                            <option value="wavelet">Analise Wavelet</option>
+                            <option value="kmeans">K-Means Clustering</option>
+                            <option value="pca">PCA (Analise de Componentes)</option>
+                            <option value="bayesian">Otimizacao Bayesiana</option>
+                            <option value="stacking">Stacking Ensemble</option>
+                            <option value="fractal">Analise Fractal</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:0.5rem">
+                    <label>Peso Frequencia vs Atraso</label>
+                    <input type="range" id="sim-peso-freq" min="0" max="100" value="50" style="width:100%">
+                    <div style="display:flex;justify-content:space-between;font-size:0.8em;color:#888">
+                        <span>Só Frequencia</span><span>Balanceado</span><span>Só Atraso</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap">
+                    <button class="btn btn-primario" onclick="iniciarSimulacao()">
+                        <i class="fas fa-play"></i> Simular
+                    </button>
+                    <button class="btn btn-verde" onclick="executarMonteCarlo()">
+                        <i class="fas fa-chart-line"></i> Monte Carlo
+                    </button>
+                    <button class="btn btn-amarelo" onclick="ativarAutoCheck()">
+                        <i class="fas fa-sync-alt"></i> <span id="auto-check-label">Auto-Check OFF</span>
+                    </button>
+                </div>
+                <div id="sim-progress" style="display:none; margin-top:1rem;">
+                    <div class="progress-bar"><div class="progress-fill" id="sim-progress-bar" style="width:0%"></div>
+                        <p style="color:#888; font-size:0.85em; margin-top:8px" id="sim-progress-text">Gerando...</p>
+                    </div>
+                </div>
+                <div id="sim-resultado" style="display:none; margin-top:1rem;"></div>
+                <div id="sim-monte-carlo" style="display:none; margin-top:1rem;"></div>
+            </div>
+        </div>
+
+        <!-- ABA: Minhas Simulacoes -->
+        <div id="aba-minhas" class="conteudo-aba">
+            <div class="card">
+                <div class="card-titulo"><i class="fas fa-list"></i> Historico de Simulacoes</div>
+                <div class="filtros">
+                    <select id="filter-loteria" onchange="carregarSimulacoes()"><option value="">Todas</option>
+                        <option value="lotofacil">Lotofacil</option><option value="megasena">Mega-Sena</option>
+                        <option value="quina">Quina</option><option value="lotomania">Lotomania</option>
+                        <option value="timemania">Timemania</option><option value="diadesorte">Dia de Sorte</option>
+                    </select>
+                    <select id="filter-metodo" onchange="carregarSimulacoes()"><option value="">Todos os metodos</option>
+                        <option value="IA">IA</option><option value="Ultra">Ultra</option>
+                        <option value="Global">Global</option><option value="Combinacoes">Combinacoes</option>
+                        <option value="LSTM">LSTM</option><option value="QLearning">Q-Learning</option>
+                        <option value="Fuzzy">Fuzzy</option><option value="Bayesian">Bayesian</option>
+                        <option value="Stacking">Stacking</option><option value="Fractal">Fractal</option>
+                    </select>
+                    <select id="filter-status" onchange="carregarSimulacoes()"><option value="">Todos status</option>
+                        <option value="pendente">Pendentes</option><option value="verificado">Verificados</option>
+                    </select>
+                    <button class="btn btn-verde" onclick="carregarSimulacoes()" style="padding:8px 16px;font-size:0.85em">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
+                </div>
+                <div id="sim-list"><div class="loading"><i class="fas fa-spinner"></i><br>Carregando simulacoes...</div></div>
+            </div>
+        </div>
+
+        <!-- ABA: Graficos -->
+        <div id="aba-graficos" class="conteudo-aba">
+            <div class="card">
+                <div class="card-titulo"><i class="fas fa-chart-area"></i> Evolucao de Acertos por Tipo</div>
+                <p style="color:#888;font-size:0.85em;margin-bottom:1rem">Mostra a evolucao dos acertos ao longo dos concursos verificados, separada por tipo de simulacao.</p>
+                <div class="chart-container"><canvas id="chart-evolucao"></canvas></div>
+            </div>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-titulo"><i class="fas fa-chart-pie"></i> Distribuicao de Acertos</div>
+                    <div class="chart-container"><canvas id="chart-distribuicao"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="card-titulo"><i class="fas fa-trophy"></i> Performance por Tipo</div>
+                    <div id="performance-tipos" class="loading"><i class="fas fa-spinner"></i><br>Carregando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: Comparar -->
+        <div id="aba-comparar" class="conteudo-aba">
+            <div class="card">
+                <div class="card-titulo"><i class="fas fa-balance-scale"></i> Comparar Simulacoes</div>
+                <p style="color:#888;font-size:0.85em;margin-bottom:1rem">Compare o desempenho de diferentes simulacoes lado a lado.</p>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Simulacao A</label>
+                        <select id="compare-a"><option value="">Selecione...</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Simulacao B</label>
+                        <select id="compare-b"><option value="">Selecione...</option></select>
+                    </div>
+                </div>
+                <button class="btn btn-primario" onclick="compararSimulacoes()" style="margin-top:1rem">
+                    <i class="fas fa-search"></i> Comparar
+                </button>
+                <div id="compare-resultado" style="margin-top:1.5rem;"></div>
+            </div>
+        </div>
+
+        <!-- ABA: Exportar -->
+        <div id="aba-exportar" class="conteudo-aba">
+            <div class="card">
+                <div class="card-titulo"><i class="fas fa-file-export"></i> Exportar Dados</div>
+                <p style="color:#888;font-size:0.85em;margin-bottom:1rem">Exporte os dados das simulacoes em CSV ou JSON.</p>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Formato</label>
+                        <select id="export-format"><option value="csv">CSV</option><option value="json">JSON</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Escopo</label>
+                        <select id="export-scope"><option value="todas">Todas as simulacoes</option>
+                            <option value="verificadas">Somente verificadas</option>
+                            <option value="pendentes">Somente pendentes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Lotelia (opcional)</label>
+                        <select id="export-loteria"><option value="">Todas</option>
+                            <option value="lotofacil">Lotofacil</option><option value="megasena">Mega-Sena</option>
+                            <option value="quina">Quina</option><option value="lotomania">Lotomania</option>
+                            <option value="timemania">Timemania</option><option value="diadesorte">Dia de Sorte</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="display:flex;align-items:flex-end">
+                        <button class="btn btn-verde" onclick="exportarDados()"><i class="fas fa-download"></i> Exportar</button>
+                    </div>
+                </div>
+                <div id="export-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    var NOMES = { megasena:'Mega-Sena', lotofacil:'Lotofacil', lotomania:'Lotomania', quina:'Quina', loteca:'Loteca', timemania:'Timemania', diadesorte:'Dia de Sorte' };
+    var COLORS = { megasena:'#00A859', lotofacil:'#9B59B6', lotomania:'#E74C3C', quina:'#3498DB', loteca:'#F39C12', timemania:'#1ABC9C', diadesorte:'#E67E22' };
+    var EVOLUCAO_CHART = null;
+    var DIST_CHART = null;
+
+    function mudarAba(aba) {
+        document.querySelectorAll('.aba').forEach(function(a) { a.classList.remove('ativa'); });
+        document.querySelectorAll('.conteudo-aba').forEach(function(c) { c.classList.remove('ativo'); });
+        var el = document.getElementById('aba-' + aba);
+        if (el) el.classList.add('ativa');
+        var conteudo = document.getElementById('aba-' + aba);
+        if (conteudo) conteudo.classList.add('ativo');
+        if (aba === 'graficos') carregarGraficos();
+        if (aba === 'minhas') carregarSimulacoes();
+        if (aba === 'comparar') carregarComparar();
+    }
+
+    function getLoteriaSelecionada() { return document.getElementById('sim-loteria').value; }
+    function getQuantidade() { return parseInt(document.getElementById('sim-quantidade').value) || 10; }
+    function getNome() { return document.getElementById('sim-nome').value.trim(); }
+    function getMetodo() { return document.getElementById('sim-metodo').value; }
+
+    async function iniciarSimulacao() {
+        var loteria = getLoteriaSelecionada();
+        var quantidade = getQuantidade();
+        var nome = getNome() || ('Simulacao ' + loteria + ' ' + new Date().toLocaleDateString('pt-BR'));
+        var metodo = getMetodo();
+        var peso_freq = parseInt(document.getElementById('sim-peso-freq').value) / 100;
+
+        document.getElementById('sim-progress').style.display = 'block';
+        document.getElementById('sim-resultado').style.display = 'none';
+        document.getElementById('sim-progress-bar').style.width = '20%';
+        document.getElementById('sim-progress-text').textContent = 'Gerando combinacoes...';
+
+        try {
+            var resp = await fetch('/api/simular', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ loteria: loteria, quantidade: quantidade, nome: nome, metodo: metodo, peso_freq: peso_freq })
+            });
+            if (!resp.ok) throw new Error('Erro ao iniciar simulacao');
+            var data = await resp.json();
+            document.getElementById('sim-progress-bar').style.width = '60%';
+            document.getElementById('sim-progress-text').textContent = 'Verificando resultados...';
+
+            if (data.status === 'ok' && data.gerados) {
+                document.getElementById('sim-progress-bar').style.width = '100%';
+                var html = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> <strong>' + data.nome + '</strong> - ' + data.gerados + ' jogo(s) gerados para ' + (NOMES[loteria] || loteria) + ' via ' + metodo + '.</div>';
+                html += '<div style="margin-top:10px"><button class="btn btn-verde" onclick="verificarResultadoSimulacao(\'' + data.simulacao_id + '\')"><i class="fas fa-search"></i> Verificar Resultado</button> <a href="/simulacao" class="btn btn-amarelo"><i class="fas fa-list"></i> Ver Na Lista</a></div>';
+                document.getElementById('sim-resultado').innerHTML = html;
+                document.getElementById('sim-resultado').style.display = 'block';
+            } else {
+                document.getElementById('sim-resultado').innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: ' + (data.erro || 'Desconhecido') + '</div>';
+                document.getElementById('sim-resultado').style.display = 'block';
+            }
+            document.getElementById('sim-progress').style.display = 'none';
+        } catch (e) {
+            document.getElementById('sim-resultado').innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: ' + e.message + '</div>';
+            document.getElementById('sim-resultado').style.display = 'block';
+            document.getElementById('sim-progress').style.display = 'none';
+        }
+    }
+
+    async function verificarResultadoSimulacao(id) {
+        try {
+            var resp = await fetch('/api/verificar-resultados', { method: 'POST' });
+            var r = await resp.json();
+            carregarSimulacoes();
+            alert('Verificacao concluida! ' + r.loterias_verificadas + ' loterias processadas.');
+        } catch(e) {
+            alert('Erro: ' + e.message);
+        }
+    }
+
+    async function carregarSimulacoes() {
+        var loteria = document.getElementById('filter-loteria').value;
+        var metodo = document.getElementById('filter-metodo').value;
+        var status = document.getElementById('filter-status').value;
+
+        var params = new URLSearchParams();
+        if (loteria) params.set('loteria', loteria);
+        if (metodo) params.set('metodo', metodo);
+        if (status) params.set('status', status);
+
+        var container = document.getElementById('sim-list');
+        container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><br>Carregando...</div>';
+
+        try {
+            var resp = await fetch('/api/simulacoes?' + params.toString());
+            if (!resp.ok) throw new Error('Erro ao carregar');
+            var data = await resp.json();
+            renderSimulacoes(data);
+        } catch(e) {
+            container.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: ' + e.message + '</div>';
+        }
+    }
+
+    async function executarMonteCarlo() {
+        var loteria = getLoteriaSelecionada();
+        var container = document.getElementById('sim-monte-carlo');
+        var btn = event.target.parentElement;
+        btn.disabled = true;
+        container.style.display = 'block';
+        container.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Executando 3000 simulacoes Monte Carlo...</div>';
+
+        try {
+            var resp = await fetch('/api/monte-carlo/' + loteria);
+            if (!resp.ok) throw new Error('Erro ao executar Monte Carlo');
+            var data = await resp.json();
+            var mc = data.monte_carlo;
+            var r = mc.resultados;
+            var html = '<div class="card"><h3><i class="fas fa-chart-line"></i> Monte Carlo - ' + (NOMES[loteria] || loteria) + '</h3>';
+            html += '<p>Simulacoes: ' + mc.iteracoes + ' | Ultimos ' + mc.ultimos_concursos_analisados + ' concursos</p>';
+            html += '<table><thead><tr><th>Estrategia</th><th>Media Acertos</th><th>Max Acertos</th></tr></thead><tbody>';
+            html += '<tr><td>Aleatorio</td><td>' + r.aleatorio.media_acertos + '</td><td>' + r.aleatorio.max_acertos + '</td></tr>';
+            html += '<tr><td>Frequencia</td><td>' + r.frequencia.media_acertos + '</td><td>' + r.frequencia.max_acertos + '</td></tr>';
+            html += '<tr><td>IA</td><td>' + r.ia.media_acertos + '</td><td>' + r.ia.max_acertos + '</td></tr>';
+            html += '</tbody></table>';
+            html += '<p><strong>Melhor estrategia: ' + mc.melhor_estrategia + '</strong></p>';
+            html += '</div>';
+            container.innerHTML = html;
+        } catch(e) {
+            container.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: ' + e.message + '</div>';
+        }
+        btn.disabled = false;
+    }
+
+    var autoCheckInterval = null;
+    function ativarAutoCheck() {
+        var label = document.getElementById('auto-check-label');
+        if (autoCheckInterval) {
+            clearInterval(autoCheckInterval);
+            autoCheckInterval = null;
+            label.textContent = 'Auto-Check OFF';
+            label.parentElement.classList.remove('btn-amarelo');
+            label.parentElement.classList.add('btn-primario');
+            return;
+        }
+        label.textContent = 'Auto-Check ON';
+        label.parentElement.classList.remove('btn-primario');
+        label.parentElement.classList.add('btn-amarelo');
+        autoCheckInterval = setInterval(function() {
+            fetch('/api/verificar-resultados', {method: 'POST'}).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.loterias_verificadas > 0) {
+                    carregarSimulacoes();
+                }
+            }).catch(function(){});
+        }, 30000);
+        carregarSimulacoes();
+    }
+
+    function renderSimulacoes(simulacoes) {
+        var container = document.getElementById('sim-list');
+        if (!simulacoes || !simulacoes.length) {
+            container.innerHTML = '<div class="vazio" style="padding:40px"><i class="fas fa-inbox"></i><br>Nenhuma simulacao encontrada.</div>';
+            return;
+        }
+
+        var html = '<table><thead><tr><th>Nome</th><th>Loteria</th><th>Metodo</th><th>Jogos</th><th>Concurso</th><th>Status</th><th>Acoes</th></tr></thead><tbody>';
+        for (var s of simulacoes) {
+            var nome = s.nome || 'Sem nome';
+            var loteria = NOMES[s.loteria] || s.loteria;
+            var metodo = s.metodo || '?';
+            var total = s.total || 0;
+            var concurso = s.concurso || '-';
+            var verificadas = s.verificadas || 0;
+            var pendente = total - verificadas;
+            var cor = COLORS[s.loteria] || '#00d4aa';
+
+            var statusHtml = '';
+            if (pendente > 0) {
+                statusHtml = '<span class="badge badge-pendente">' + pendente + ' pendente(s)</span>';
+            }
+            if (verificadas > 0) {
+                statusHtml += ' <span class="badge badge-ok">' + verificadas + ' verificado(s)</span>';
+            }
+            if (total === 0) {
+                statusHtml = '<span class="badge badge-vazia">-</span>';
+            }
+
+            html += '<tr>';
+            html += '<td><strong>' + nome + '</strong></td>';
+            html += '<td><span style="color:' + cor + '">' + loteria + '</span></td>';
+            html += '<td><span class="fonte-badge fonte-' + metodo + '">' + metodo + '</span></td>';
+            html += '<td>' + total + '</td>';
+            html += '<td>#' + concurso + '</td>';
+            html += '<td>' + statusHtml + '</td>';
+            html += '<td><button class="btn btn-primario" style="padding:4px 12px;font-size:0.8em" onclick="verificarSimulacao(\'' + s.id + '\',\'' + s.loteria + '\')"><i class="fas fa-sync-alt"></i> Verificar</button></td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    async function verificarSimulacao(id, loteria) {
+        try {
+            var resp = await fetch('/api/verificar-resultados', { method: 'POST' });
+            var r = await resp.json();
+            carregarSimulacoes();
+        } catch(e) {
+            alert('Erro: ' + e.message);
+        }
+    }
+
+    async function carregarGraficos() {
+        var container = document.getElementById('chart-evolucao');
+        if (!container) return;
+
+        try {
+            var [evolucao, dist, perf] = await Promise.all([
+                fetch('/api/evolucao-acertos').then(function(r) { return r.json(); }),
+                fetch('/api/distribuicao-acertos').then(function(r) { return r.json(); }),
+                fetch('/api/performance-tipos').then(function(r) { return r.json(); })
+            ]);
+
+            renderEvolucaoChart(evolucao);
+            renderDistChart(dist);
+            renderPerformance(perf);
+        } catch(e) {
+            console.error('Erro ao carregar graficos:', e);
+        }
+    }
+
+    function renderEvolucaoChart(data) {
+        var ctx = document.getElementById('chart-evolucao');
+        if (!ctx) return;
+        if (EVOLUCAO_CHART) EVOLUCAO_CHART.destroy();
+
+        var datasets = [];
+        var cores = { IA: '#00d4aa', Ultra: '#a855f7', Global: '#3b82f6', Combinacoes: '#f59e0b', Inteligente: '#ef4444' };
+
+        for (var tipo in data) {
+            var pontos = data[tipo];
+            if (!pontos || !pontos.length) continue;
+            datasets.push({
+                label: tipo,
+                data: pontos,
+                borderColor: cores[tipo] || '#888',
+                backgroundColor: (cores[tipo] || '#888') + '20',
+                tension: 0.3,
+                fill: false,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            });
+        }
+
+        EVOLUCAO_CHART = new Chart(ctx, {
+            type: 'line',
+            data: { datasets: datasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Evolucao de Acertos por Concurso', color: '#e0e0e0' }, legend: { labels: { color: '#e0e0e0' } } },
+                scales: {
+                    x: { title: { display: true, text: 'Concurso', color: '#888' }, ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { title: { display: true, text: 'Acertos', color: '#888' }, ticks: { color: '#888', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    function renderDistChart(data) {
+        var ctx = document.getElementById('chart-distribuicao');
+        if (!ctx) return;
+        if (DIST_CHART) DIST_CHART.destroy();
+
+        var labels = [];
+        var valores = [];
+        var cores = [];
+        for (var i = 0; i <= 15; i++) {
+            var count = (data && data[i]) || 0;
+            if (count > 0) {
+                labels.push(i + ' acertos');
+                valores.push(count);
+                var c = i >= 10 ? '#00d4aa' : i >= 7 ? '#ffc107' : i >= 4 ? '#f59e0b' : '#ff6b6b';
+                cores.push(c);
+            }
+        }
+
+        DIST_CHART = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ data: valores, backgroundColor: cores, borderRadius: 4 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Distribuicao de Acertos', color: '#e0e0e0' }, legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { ticks: { color: '#888', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'Frequencia', color: '#888' } }
+                }
+            }
+        });
+    }
+
+    function renderPerformance(data) {
+        var container = document.getElementById('performance-tipos');
+        if (!container) return;
+        var html = '';
+        var tipos = data || {};
+        for (var tipo in tipos) {
+            var t = tipos[tipo];
+            var med = (t.media_acertos || 0).toFixed(2);
+            var max = t.max_acertos || 0;
+            var total = t.total_verificadas || 0;
+            html += '<div class="simulacao-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong>' + tipo + '</strong></div>';
+            html += '<div style="font-size:0.85em;color:#888">Media: <strong>' + med + '</strong> | Max: <strong>' + max + '</strong> | Verificado: <strong>' + total + '</strong> jogos</div>';
+            html += '</div>';
+        }
+        if (!html) html = '<div class="vazio" style="padding:20px">Sem dados de performance</div>';
+        container.innerHTML = html;
+    }
+
+    async function carregarComparar() {
+        try {
+            var resp = await fetch('/api/simulacoes');
+            var data = await resp.json();
+            var selA = document.getElementById('compare-a');
+            var selB = document.getElementById('compare-b');
+            selA.innerHTML = '<option value="">Selecione...</option>';
+            selB.innerHTML = '<option value="">Selecione...</option>';
+            for (var s of (data || [])) {
+                var opt = '<option value="' + s.id + '">' + (s.nome || 'Sem nome') + ' (' + (NOMES[s.loteria] || s.loteria) + ')</option>';
+                selA.innerHTML += opt;
+                selB.innerHTML += opt;
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function compararSimulacoes() {
+        var idA = document.getElementById('compare-a').value;
+        var idB = document.getElementById('compare-b').value;
+        if (!idA || !idB) { alert('Selecione duas simulacoes'); return; }
+        if (idA === idB) { alert('Selecione simulacoes diferentes'); return; }
+
+        var container = document.getElementById('compare-resultado');
+        container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><br>Comparando...</div>';
+
+        try {
+            var resp = await fetch('/api/comparar-simulacoes/' + idA + '/' + idB);
+            if (!resp.ok) throw new Error('Erro ao comparar');
+            var data = await resp.json();
+            var html = '';
+            if (data.erro) {
+                html = '<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> ' + data.erro + '</div>';
+            } else {
+                html += '<div class="grid-2">';
+                html += '<div class="simulacao-card"><h4>' + (data.a_nome || 'Sim A') + '</h4>';
+                html += '<p>Lot: <strong>' + (NOMES[data.a_loteria] || data.a_loteria) + '</strong> | Metodo: ' + data.a_metodo + '</p>';
+                html += '<p>Jogos: <strong>' + data.a_total + '</strong> | Verificados: <strong>' + (data.a_verificadas || 0) + '</strong></p>';
+                html += '<p>Media Acertos: <strong>' + (data.a_media || 0).toFixed(2) + '</strong> | Max: <strong>' + (data.a_max || 0) + '</strong></p>';
+                html += '</div>';
+                html += '<div class="simulacao-card"><h4>' + (data.b_nome || 'Sim B') + '</h4>';
+                html += '<p>Lot: <strong>' + (NOMES[data.b_loteria] || data.b_loteria) + '</strong> | Metodo: ' + data.b_metodo + '</p>';
+                html += '<p>Jogos: <strong>' + data.b_total + '</strong> | Verificados: <strong>' + (data.b_verificadas || 0) + '</strong></p>';
+                html += '<p>Media Acertos: <strong>' + (data.b_media || 0).toFixed(2) + '</strong> | Max: <strong>' + (data.b_max || 0) + '</strong></p>';
+                html += '</div></div>';
+            }
+            container.innerHTML = html;
+        } catch(e) {
+            container.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: ' + e.message + '</div>';
+        }
+    }
+
+    async function exportarDados() {
+        var formato = document.getElementById('export-format').value;
+        var escopo = document.getElementById('export-scope').value;
+        var loteria = document.getElementById('export-loteria').value;
+
+        var params = new URLSearchParams();
+        params.set('formato', formato);
+        params.set('escopo', escopo);
+        if (loteria) params.set('loteria', loteria);
+
+        try {
+            var resp = await fetch('/api/exportar-simulacoes?' + params.toString());
+            if (!resp.ok) throw new Error('Erro ao exportar');
+            var blob = await resp.blob();
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'simulacoes.' + formato;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('export-status').innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> Exportado com sucesso!</div>';
+        } catch(e) {
+            document.getElementById('export-status').innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: ' + e.message + '</div>';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        carregarSimulacoes();
+    });
+    </script>
+</body>
+</html>

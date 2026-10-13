@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analise Avancada - Loteria Federal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#e0e0e0;min-height:100vh}
+header{background:linear-gradient(135deg,#1a1a3a,#2d1b69);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:1.3rem;color:#a855f7}
+nav a{color:#888;text-decoration:none;margin-right:1rem;font-size:0.9rem}
+nav a:hover{color:#a855f7}
+.container{max-width:1200px;margin:0 auto;padding:1.5rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:1rem;margin-top:1rem}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem}
+@media(max-width:1000px){.grid-3{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+.card{background:#12122a;border-radius:12px;padding:1.2rem;border:1px solid #2a2a5a}
+.card-titulo{font-size:1rem;font-weight:700;margin-bottom:0.8rem;color:#c0c0ff}
+.badge{padding:2px 8px;border-radius:10px;font-size:0.75em;font-weight:600}
+.badge-ok{background:rgba(0,212,170,0.2);color:#00d4aa}
+.badge-warn{background:rgba(255,193,7,0.2);color:#ffc107}
+.badge-error{background:rgba(255,107,107,0.2);color:#ff6b6b}
+.badge-info{background:rgba(59,130,243,0.2);color:#60a5fa}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:0.85em;color:#888;margin-bottom:4px}
+.form-group select,.form-group input{width:100%;padding:8px 12px;background:#0f0f2a;border:1px solid #2a2a5a;border-radius:6px;color:#e0e0e0;font-size:0.9rem}
+.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em;transition:all 0.3s;display:inline-flex;align-items:center;gap:6px;color:#fff}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-primario{background:linear-gradient(135deg,#667eea,#764ba2)}
+.btn-verde{background:linear-gradient(135deg,#00d4aa,#0099cc)}
+.btn-vermelho{background:linear-gradient(135deg,#f5576c,#f093fb)}
+.btn-amarelo{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.btn-ciano{background:linear-gradient(135deg,#06b6d4,#3b82f6)}
+table{width:100%;border-collapse:collapse;font-size:0.82em}
+th{text-align:left;padding:8px 10px;background:rgba(255,255,255,0.04);color:#888;border-bottom:1px solid rgba(255,255,255,0.08)}
+td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.04)}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.progress-bar{height:6px;background:#1a1a3a;border-radius:3px;overflow:hidden;margin:6px 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,#667eea,#a855f7);border-radius:3px;transition:width 0.5s}
+.tabs{display:flex;gap:2px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:8px 16px;background:#1a1a3a;border:1px solid #2a2a5a;border-radius:6px 6px 0 0;cursor:pointer;color:#888;font-size:0.85em}
+.tab.active{background:#2d1b69;color:#a855f7;border-color:#a855f7}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.numero-bola{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:0.75em;font-weight:700;margin:2px}
+.num-frio{background:#1a3a5a;color:#60a5fa}
+.num-neutro{background:#2a2a4a;color:#a0a0c0}
+.num-quente{background:#3a1a5a;color:#f093fb}
+.num-premiado{background:#2a5a2a;color:#00d4aa}
+.alert{padding:10px 14px;border-radius:8px;font-size:0.85em;margin:0.5rem 0;display:flex;align-items:center;gap:8px}
+.alert-info{background:rgba(59,130,243,0.1);color:#60a5fa}
+.alert-success{background:rgba(0,212,170,0.1);color:#00d4aa}
+.alert-warn{background:rgba(255,193,7,0.1);color:#ffc107}
+.alert-error{background:rgba(255,107,107,0.1);color:#ff6b6b}
+.loading{padding:2rem;text-align:center;color:#666}
+.vazio{padding:2rem;text-align:center;color:#555}
+select{-webkit-appearance:none;-moz-appearance:none;appearance:none}
+</style>
+</head>
+<body>
+<header>
+<h1><i class="fas fa-microchip"></i> Analise Avancada</h1>
+<nav>
+<a href="/"><i class="fas fa-home"></i> Home</a>
+<a href="/simulacao"><i class="fas fa-dice"></i> Simulacao</a>
+<a href="/backtest"><i class="fas fa-chart-bar"></i> Backtest</a>
+<a href="/resultados"><i class="fas fa-table"></i> Resultados</a>
+</nav>
+</header>
+<div class="container">
+<div class="tabs">
+<div class="tab active" onclick="switchTab('tech')">Tecnologias</div>
+<div class="tab" onclick="switchTab('bias')">Detector de Vies</div>
+<div class="tab" onclick="switchTab('montecarlo')">Monte Carlo</div>
+<div class="tab" onclick="switchTab('recommend')">Recomendacoes</div>
+<div class="tab" onclick="switchTab('ml')">ML Avancado</div>
+</div>
+
+<div id="tab-tech" class="tab-content active">
+<div class="form-group" style="max-width:300px">
+<label>Loteria</label>
+<select id="tech-loteria">
+<option value="lotofacil">Lotofacil</option><option value="megasena">Mega-Sena</option>
+<option value="quina">Quina</option><option value="lotomania">Lotomania</option>
+<option value="timemania">Timemania</option><option value="diadesorte">Dia de Sorte</option>
+</select>
+</div>
+<div class="form-group">
+<button class="btn btn-primario" onclick="executarTecnologia()"><i class="fas fa-play"></i> Executar Todas</button>
+<button class="btn btn-verde" onclick="executarTecnologiaIndividual()"><i class="fas fa-flask"></i> Escolher Unica</button>
+</div>
+<div id="tech-progress" class="loading" style="display:none"><i class="fas fa-spinner fa-spin"></i> Processando...</div>
+<div id="tech-result"></div>
+</div>
+
+<div id="tab-bias" class="tab-content">
+<div class="form-group" style="max-width:300px">
+<label>Loteria</label>
+<select id="bias-loteria">
+<option value="lotofacil">Lotofacil</option><option value="megasena">Mega-Sena</option>
+<option value="quina">Quina</option><option value="lotomania">Lotomania</option>
+<option value="timemania">Timemania</option><option value="diadesorte">Dia de Sorte</option>
+</select>
+</div>
+<button class="btn btn-ciano" onclick="executarBias()"><i class="fas fa-search"></i> Analisar Vies</button>
+<div id="bias-result"></div>
+</div>
+
+<div id="tab-montecarlo" class="tab-content">
+<div class="form-group" style="max-width:300px">
+<label>Loteria</label>
+<select id="mc-loteria">
+<option value="lotofacil">Lotofacil</option><option value="megasena">Mega-Sena</option>
+<option value="quina">Quina</option><option value="lotomania">Lotomania</option>
+<option value="timemania">Timemania</option><option value="diadesorte">Dia de Sorte</option>
+</select>
+</div>
+<button class="btn btn-amarelo" onclick="executarMC()"><i class="fas fa-chart-line"></i> Rodar Monte Carlo (3000 iteracoes)</button>
+<div id="mc-progress" class="loading" style="display:none"><i class="fas fa-spinner fa-spin"></i> Simulando...</div>
+<div id="mc-result"></div>
+</div>
+
+<div id="tab-recommend" class="tab-content">
+<div class="form-group" style="max-width:300px">
+<label>Loteria</label>
+<select id="rec-loteria">
+<option value="lotofacil">Lotofacil</option><option value="megasena">Mega-Sena</option>
+<option value="quina">Quina</option><option value="lotomania">Lotomania</option>
+<option value="timemania">Timemania</option><option value="diadesorte">Dia de Sorte</option>
+</select>
+</div>
+<button class="btn btn-verde" onclick="executarRecomendacoes()"><i class="fas fa-lightbulb"></i> Obter Recomendacoes</button>
+<div id="rec-result"></div>
+</div>
+
+<div id="tab-ml" class="tab-content">
+<div class="form-group" style="max-width:300px">
+<label>Loteria</label>
+<select id="ml-loteria">
+<option value="lotofacil">Lotofacil</option><option value="megasena">Mega-Sena</option>
+<option value="quina">Quina</option><option value="lotomania">Lotomania</option>
+<option value="timemania">Timemania</option><option value="diadesorte">Dia de Sorte</option>
+</select>
+</div>
+<div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap">
+<button class="btn btn-primario" onclick="executarMLComplete()"><i class="fas fa-brain"></i> Todas ML</button>
+<button class="btn btn-verde" onclick="executarML('regression')"><i class="fas fa-chart-line"></i> Regressao Logistica</button>
+<button class="btn btn-ciano" onclick="executarML('arima')"><i class="fas fa-wave-square"></i> ARIMA/ETS</button>
+<button class="btn btn-amarelo" onclick="executarML('poisson')"><i class="fas fa-calculator"></i> Poisson/Geom</button>
+<button class="btn btn-vermelho" onclick="executarML('gradient')"><i class="fas fa-tree"></i> XGBoost</button>
+<button class="btn btn-primario" onclick="executarML('lightgbm')"><i class="fas fa-bolt"></i> LightGBM</button>
+</div>
+<div id="ml-progress" class="loading" style="display:none"><i class="fas fa-spinner fa-spin"></i> Processando modelos ML...</div>
+<div id="ml-result"></div>
+</div>
+</div>
+
+<script>
+var LOTERIAS={lotofacil:'Lotofacil',megasena:'Mega-Sena',quina:'Quina',lotomania:'Lotomania',timemania:'Timemania',diadesorte:'Dia de Sorte'};
+function switchTab(tab){document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});document.getElementById('tab-'+tab).classList.add('active');document.querySelectorAll('.tab').forEach(function(t){if(t.textContent.toLowerCase().indexOf(tab.toLowerCase())>=0)t.classList.add('active')})}
+
+async function executarTecnologia(){
+var loteria=getLoteria('tech-loteria');
+document.getElementById('tech-progress').style.display='block';
+document.getElementById('tech-result').innerHTML='';
+try{
+var resp=await fetch('/api/tecnologias_avancadas/'+loteria);
+if(!resp.ok)throw new Error('Erro '+resp.status);
+var data=await resp.json();
+var tech=data.tecnologias;
+var html='<div class="grid"><h3 class="card-titulo" style="grid-column:1/-1">Resultados - '+(LOTERIAS[loteria]||loteria)+' ('+data.concursos_analisados+' concursos)</h3>';
+for(var k in tech){
+var r=tech[k];
+var acertos=r.acertos||'-';
+html+='<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span class="badge badge-info">'+k+'</span><span>'+k+'</span></div>';
+html+='<p style="font-size:0.85em;color:#aaa">Acertos medios: <strong>'+acertos+'</strong></p>';
+if(r.numeros_recomendados) html+='<div>'+r.numeros_recomendados.slice(0,15).map(function(n){return '<span class="numero-bola num-quente">'+n+'</span>'}).join(' ')+'</div>';
+html+='</div>';
+}
+html+='</div>';
+document.getElementById('tech-result').innerHTML=html;
+}catch(e){document.getElementById('tech-result').innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: '+e.message+'</div>'}
+document.getElementById('tech-progress').style.display='none';
+}
+
+async function executarTecnologiaIndividual(){
+var loteria=getLoteria('tech-loteria');
+var tec=prompt('Tecnologia:', 'lstm');
+if(!tec)return;
+document.getElementById('tech-progress').style.display='block';
+try{
+var resp=await fetch('/api/tecnologia/'+loteria+'/'+tec.trim());
+if(!resp.ok)throw new Error('Erro '+resp.status);
+var data=await resp.json();
+document.getElementById('tech-result').innerHTML='<div class="card"><h3>'+data.tecnologia+' - '+(LOTERIAS[loteria]||loteria)+'</h3><pre style="background:#0a0a1a;padding:10px;border-radius:8px;overflow-x:auto;color:#e0e0e0;font-size:0.85em">'+JSON.stringify(data.resultado,null,2)+'</pre></div>';
+}catch(e){document.getElementById('tech-result').innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: '+e.message+'</div>'}
+document.getElementById('tech-progress').style.display='none';
+}
+
+async function executarBias(){
+var loteria=getLoteria('bias-loteria');
+document.getElementById('bias-result').innerHTML='<div class="loading"><i class="fas fa-spinner fa-spin"></i> Analisando...</div>';
+try{
+var resp=await fetch('/api/bias-detector/'+loteria);
+if(!resp.ok)throw new Error('Erro '+resp.status);
+var data=await resp.json();
+var b=data.bias_detector;
+var html='<div class="card"><h3 class="card-titulo">Detector de Vies - '+(LOTERIAS[loteria]||loteria)+'</h3>';
+html+='<table><tr><td>Sorteios</td><td><strong>'+b.total_sorteios+'</strong></td><td>Entropia</td><td><strong>'+b.entropia+' (norm: '+b.entropia_normalizada+')</strong></td></tr>';
+html+='<tr><td>Chisquare</td><td><strong>'+b.chisquare+'</strong></td><td>Interpretacao</td><td><span class="badge badge-ok">'+b.interpretacao+'</span></td></tr>';
+html+='<tr><td>KS Statistic</td><td><strong>'+b.ks_statistic+'</strong></td><td>Uniforme</td><td><strong>'+b.distribuicao_uniforme+'</strong></td></tr>';
+html+='<tr><td>Desvio Padrao</td><td><strong>'+b.desvio_padrao_frequencia+'</strong></td><td>Media Freq</td><td><strong>'+b.media_frequencia+'</strong></td></tr>';
+html+='</table>';
+html+='<h4 style="margin-top:1rem;color:#f093fb">Top 10 Quentes</h4><div>'+b.top10_quentes.map(function(x){return '<span class="numero-bola num-quente" title="Freq: '+x.frequencia+'">'+x.numero+'</span>'}).join(' ')+'</div>';
+html+='<h4 style="margin-top:0.5rem;color:#60a5fa">Top 10 Frios</h4><div>'+b.top10_frios.map(function(x){return '<span class="numero-bola num-frio" title="Freq: '+x.frequencia+'">'+x.numero+'</span>'}).join(' ')+'</div>';
+html+='</div>';
+document.getElementById('bias-result').innerHTML=html;
+}catch(e){document.getElementById('bias-result').innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: '+e.message+'</div>'}
+}
+
+async function executarMC(){
+var loteria=getLoteria('mc-loteria');
+document.getElementById('mc-progress').style.display='block';
+document.getElementById('mc-result').innerHTML='<div class="loading"><i class="fas fa-spinner fa-spin"></i> 3000 simulacoes em andamento...</div>';
+try{
+var resp=await fetch('/api/monte-carlo/'+loteria);
+if(!resp.ok)throw new Error('Erro '+resp.status);
+var data=await resp.json();
+var mc=data.monte_carlo;
+var r=mc.resultados;
+var html='<div class="card"><h3 class="card-titulo">Monte Carlo - '+(LOTERIAS[loteria]||loteria)+'</h3>';
+html+='<p style="margin-bottom:1rem">'+mc.iteracoes+' simulacoes | Ultimos '+mc.ultimos_concursos_analisados+' concursos | Melhor: <strong>'+mc.melhor_estrategia+'</strong></p>';
+html+='<table><thead><tr><th>Estrategia</th><th>Media de Acertos</th><th>Max Acertos</th><th>Eficacia</th></tr></thead><tbody>';
+var maxMedia=Math.max(r.aleatorio.media_acertos,r.frequencia.media_acertos,r.ia.media_acertos);
+html+='<tr><td>Aleatorio</td><td><strong>'+r.aleatorio.media_acertos+'</strong></td><td>'+r.aleatorio.max_acertos+'</td><td><div class="progress-bar"><div class="progress-fill" style="width:'+(r.aleatorio.media_acertos/maxMedia*100)+'%"></div></div></td></tr>';
+html+='<tr><td>Frequencia</td><td><strong>'+r.frequencia.media_acertos+'</strong></td><td>'+r.frequencia.max_acertos+'</td><td><div class="progress-bar"><div class="progress-fill" style="width:'+(r.frequencia.media_acertos/maxMedia*100)+'%"></div></div></td></tr>';
+html+='<tr><td>IA</td><td><strong>'+r.ia.media_acertos+'</strong></td><td>'+r.ia.max_acertos+'</td><td><div class="progress-bar"><div class="progress-fill" style="width:'+(r.ia.media_acertos/maxMedia*100)+'%"></div></div></td></tr>';
+html+='</tbody></table></div>';
+document.getElementById('mc-result').innerHTML=html;
+}catch(e){document.getElementById('mc-result').innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: '+e.message+'</div>'}
+document.getElementById('mc-progress').style.display='none';
+}
+
+async function executarRecomendacoes(){
+var loteria=getLoteria('rec-loteria');
+document.getElementById('rec-result').innerHTML='<div class="loading"><i class="fas fa-spinner fa-spin"></i> Gerando recomendacoes...</div>';
+try{
+var resp=await fetch('/api/tecnologias_avancadas/'+loteria);
+if(!resp.ok)throw new Error('Erro '+resp.status);
+var data=await resp.json();
+var tech=data.tecnologias;
+var recoms={};
+for(var k in tech){
+var r=tech[k];
+if(r.numeros_recomendados) recoms[k]={nums:r.numeros_recomendados.slice(0,15),score:r.acertos||0};
+}
+var sorted=Object.entries(recoms).sort(function(a,b){return b[1].score-a[1].score});
+var html='<div class="card"><h3 class="card-titulo">Recomendacoes - '+(LOTERIAS[loteria]||loteria)+'</h3>';
+html+='<p style="margin-bottom:1rem">Ranking por score de confianca (acertos medios)</p>';
+html+='<table><thead><tr><th>#</th><th>Tecnologia</th><th>Score</th><th>Recomendados</th></tr></thead><tbody>';
+sorted.forEach(function(entry,i){
+var k=entry[0];var r=entry[1];
+var nums=r.nums.map(function(n){return '<span class="numero-bola num-quente">'+n+'</span>'}).join(' ');
+html+='<tr><td>'+(i+1)+'</td><td>'+k+'</td><td>'+r.score+'</td><td>'+nums+'</td></tr>';
+});
+html+='</tbody></table></div>';
+document.getElementById('rec-result').innerHTML=html;
+}catch(e){document.getElementById('rec-result').innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: '+e.message+'</div>'}
+}
+
+function getLoteria(id){var el=document.getElementById(id||'tech-loteria');return el?el.value:''}
+
+async function executarMLComplete(){
+var loteria=getLoteria('ml-loteria');
+document.getElementById('ml-progress').style.display='block';
+try{
+var resp=await fetch('/api/ml-complete/'+loteria);
+if(!resp.ok)throw new Error('Erro '+resp.status);
+var data=await resp.json();
+var a=data.analise_ml;
+var html='<div class="grid"><h3 class="card-titulo" style="grid-column:1/-1">Analise ML Completa - '+(LOTERIAS[loteria]||loteria)+'</h3>';
+var sections=['regressao_logistica','arima_real','distribuicao_poisson','xgboost_real','lightgbm_real'];
+var names={'regressao_logistica':'Regressao Logistica','arima_real':'ARIMA Real','distribuicao_poisson':'Poisson/Geometrica','xgboost_real':'XGBoost','lightgbm_real':'LightGBM'};
+for(var s of sections){
+var r=a[s];
+if(!r){html+='<div class="card"><span class="badge badge-error">'+names[s]+'</span> Nao implementado</div>';continue;}
+html+='<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span class="badge badge-info">'+names[s]+'</span><span>'+(r.classe||s)+'</span></div>';
+var ac='';
+if(r.acuracia_treino!==undefined) ac='<p>Acuracia treino: <strong>'+r.acuracia_treino+'</strong> | Cross-val: <strong>'+r.acuracia_cross_val+'</strong></p>';
+html+=ac;
+var top10=r.top10_mais_probaveis||r.top10_poisson||[];
+html+='<p>Top 10: '+(top10||[]).map(function(x){var n=x.numero||x.numeros;var p=x.probabilidade||x.prob||'';return '<span class="numero-bola num-quente">'+n+'('+p+')</span>'}).join(' ')+'</p>';
+var recs=r.numeros_recomendados||[];
+if(recs.length) html+='<p>Recomendados: '+recs.slice(0,15).map(function(n){return '<span class="numero-bola num-premiado">'+n+'</span>'}).join(' ')+'</p>';
+html+='</div>';
+}
+html+='</div>';
+document.getElementById('ml-result').innerHTML=html;
+}catch(e){document.getElementById('ml-result').innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: '+e.message+'</div>'}
+document.getElementById('ml-progress').style.display='none';
+}
+
+async function executarML(tipo){
+var loteria=getLoteria('ml-loteria');
+document.getElementById('ml-progress').style.display='block';
+var rotas={'regression':'/api/ml/regression','arima':'/api/ml/arima','poisson':'/api/ml/poisson','gradient':'/api/ml/gradient','lightgbm':'/api/ml/lightgbm'};
+var names={'regression':'Regressao Logistica','arima':'ARIMA','poisson':'Poisson','gradient':'XGBoost','lightgbm':'LightGBM'};
+try{
+var resp=await fetch(rotas[tipo]+'/'+loteria);
+if(!resp.ok)throw new Error('Erro '+resp.status);
+var data=await resp.json();
+var key=tipo==='regression'?'regressao_logistica':tipo==='arima'?'arima_real':tipo==='poisson'?'distribuicao_poisson':tipo==='lightgbm'?'lightgbm_real':'gradient_boosting';
+var r=data[key];
+var html='<div class="card"><h3 class="card-titulo">'+(names[tipo]||tipo)+'</h3><pre style="background:#0a0a1a;padding:10px;border-radius:8px;overflow-x:auto;color:#e0e0e0;font-size:0.75em;max-height:500px;overflow-y:auto">'+JSON.stringify(r,null,2)+'</pre></div>';
+document.getElementById('ml-result').innerHTML=html;
+}catch(e){document.getElementById('ml-result').innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Erro: '+e.message+'</div>'}
+document.getElementById('ml-progress').style.display='none';
+}
+</script>
+</body>
+</html>

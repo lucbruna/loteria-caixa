@@ -1,0 +1,32 @@
+LOTERIA FEDERAL IA - Leia antes de instalar
+============================================
+
+Obrigado por instalar o Loteria Federal IA, um sistema de analise estatistica
+e geracao de sugestoes de jogos com base em dados historicos publicos da
+Caixa Economica Federal.
+
+COMO USAR
+---------
+- "Loteria Federal IA": abre o dashboard (painel web) no seu navegador padrao.
+  Acesse http://127.0.0.1:5000 enquanto o programa estiver rodando.
+- "Loteria Federal IA (Menu)": abre o menu interativo de linha de comando,
+  com opcoes de teste de conexao, analise e relatorios.
+
+REQUISITOS
+----------
+- Conexao com a internet (os dados vem da API publica da Caixa).
+- Navegador web para o dashboard.
+- Sistema operacional Windows 64 bits.
+
+ONDE FICAM OS DADOS
+-------------------
+Os dados e relatorios gerados sao salvos em:
+  %APPDATA%\LoteriaFederal
+
+RESPONSABILIDADE
+----------------
+Este software nao possui vinculo oficial com a Caixa Economica Federal.
+As sugestoes sao apenas analises estatisticas e NAO garantem vitoria.
+Jogue com responsabilidade.
+
+Ao clicar em "Instalar", voce concorda com os termos do EULA exibido.
