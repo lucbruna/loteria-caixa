@@ -13,15 +13,15 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('cmd', choices=['audit','predict','report','drift-check'])
     args = p.parse_args()
-    root = Path(__file__).resolve().parents[1].parent
+    root = Path(__file__).resolve().parents[1]
     if args.cmd == 'audit':
-        run('python3 loteria-federal-analytica/cli/run_audit.py')
+        run('python cli/run_audit.py')
     elif args.cmd == 'predict':
-        run('python3 loteria-federal-analytica/cli/predict.py')
+        run('python cli/predict.py')
     elif args.cmd == 'report':
-        run('python3 loteria-federal-analytica/cli/audit_report.py')
+        run('python cli/audit_report.py')
     elif args.cmd == 'drift-check':
-        run('python3 loteria-federal-analytica/src/monitor/drift_simple.py')
+        run('python src/monitor/drift_simple.py')
 
 
 if __name__=='__main__':
