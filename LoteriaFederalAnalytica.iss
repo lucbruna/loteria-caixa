@@ -13,13 +13,13 @@ SetupIconFile=assets\trevo.ico
 UninstallDisplayIcon={app}\assets\trevo.ico
 
 [Files]
-Source: "src\*"; DestDir: "{app}\src"; Flags: recursesubdirs
-Source: "cli\*"; DestDir: "{app}\cli"; Flags: recursesubdirs
-Source: "data\*"; DestDir: "{app}\data"; Flags: recursesubdirs
-Source: "reports\*"; DestDir: "{app}\reports"; Flags: recursesubdirs
-Source: "docs\*"; DestDir: "{app}\docs"; Flags: recursesubdirs
-Source: "tests\*"; DestDir: "{app}\tests"; Flags: recursesubdirs
-Source: "assets\*"; DestDir: "{app}\assets"; Flags: recursesubdirs
+Source: "src\**"; DestDir: "{app}\src"; Flags: recursesubdirs
+Source: "cli\**"; DestDir: "{app}\cli"; Flags: recursesubdirs
+Source: "data\**"; DestDir: "{app}\data"; Flags: recursesubdirs
+Source: "reports\*.*"; DestDir: "{app}\reports"; Flags: recursesubdirs
+Source: "docs\*.*"; DestDir: "{app}\docs"; Flags: recursesubdirs
+Source: "tests\*.*"; DestDir: "{app}\tests"; Flags: recursesubdirs
+Source: "assets\*.*"; DestDir: "{app}\assets"; Flags: recursesubdirs
 Source: "auditoria_completa.md"; DestDir: "{app}"
 Source: "README.md"; DestDir: "{app}"
 Source: "roadmap_turbinar_ultra_top.md"; DestDir: "{app}"
